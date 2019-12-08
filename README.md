@@ -1,6 +1,6 @@
 # X:/LANDrop
 
-## This project is under development.
+### This project is a work in progress.
 
 An AirDrop-like web application that would allow devices on the same network to share files with one another. Ideally, ElectronJS would be used as a wrapper to make it more user-friendly. 
 
