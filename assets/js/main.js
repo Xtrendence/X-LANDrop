@@ -6,11 +6,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	var userPort = document.getElementsByClassName("user-port")[0];
 
 	APIRequest({ token:token, action:"get-ip" });
-	APIRequest({ token:token, action:"get-devices" });
-
-	var scanDevices = setInterval(function() {
-		APIRequest({ token:token, action:"get-devices" });
-	}, 5000);
 
 	if(detectMobile()) {
 		body.id = "mobile";
@@ -35,31 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
 								setTimeout(function() {
 									APIRequest({ token:token, action:"get-ip" });
 								}, 2000);
-							}
-						}
-						else if(action == "get-devices") {
-							var devices = response.list;
-							for(var i = 0; i < devices.length; i++) {
-								var ip = devices[i].ip;
-								APIRequest({ token:token, action:"check-device", ip:ip });
-							}
-						}
-						else if(action == "check-device") {
-							var status = response.status;
-							if(status == "active" && response.ip != userIP.textContent) {
-								if(document.getElementsByClassName("loading-overlay").length > 0) {
-									document.getElementsByClassName("loading-overlay")[0].remove();
-								}
-								if(!document.getElementById(response.ip)) {
-									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button">Send File</button></div>';
-									deviceList.innerHTML += device;
-								}
-							}
-							else if(status != "active" && document.getElementById(response.ip)) {
-								document.getElementById(response.ip).remove();
-								if(empty(deviceList.innerHTML)) {
-									deviceList.innerHTML = '<button class="loading-overlay">No Devices Found...</button>';
-								}
 							}
 						}
 					}

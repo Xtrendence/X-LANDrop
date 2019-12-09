@@ -14,7 +14,6 @@ const fs = require("fs");
 const path = require("path");
 const request = require("request");
 const ip = require("ip");
-const find = require("local-devices");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
@@ -44,20 +43,6 @@ local.post("/api", function(req, res) {
 		var action = req.body.action;
 		if(action == "get-ip") {
 			res.send({ action:"get-ip", ip:ip.address(), port:appPort });
-		}
-		else if(action == "get-devices") {
-			find().then(function(devices) {
-				res.send({ action:"get-devices", list:devices });
-			});
-		}
-		else if(action == "check-device") {
-			if(req.body.ip != ip.address()) {
-				var url = "http://" + req.body.ip + ":" + appPort + "/receive";
-				request({ uri:url }, function(error, response, body) {
-					console.log(body);
-					res.send({ action:"check-device", ip:req.body.ip, status:body });
-				});
-			}
 		}
 	}
 });
