@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							var devices = response.list;
 							for(var i = 0; i < devices.length; i++) {
 								var ip = devices[i].ip;
-								APIRequest({ action:"check-device", ip:ip });
+								APIRequest({ token:token, action:"check-device", ip:ip });
 							}
 						}
 						else if(action == "check-device") {
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								if(document.getElementsByClassName("loading-overlay").length > 0) {
 									document.getElementsByClassName("loading-overlay")[0].remove();
 								}
-								if(!document.getElementId(response.ip)) {
+								if(!document.getElementById(response.ip)) {
 									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button">Send File</button></div>';
 									deviceList.innerHTML += device;
 								}
