@@ -24,8 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
 						var response = JSON.parse(xhr.responseText);
 						var action = response.action;
 
-						console.log(response);
-
 						if(action == "get-ip") {
 							userIP.textContent = response.ip;
 							userPort.textContent = response.port;
@@ -34,17 +32,19 @@ document.addEventListener("DOMContentLoaded", function() {
 							var devices = response.list;
 							for(var i = 0; i < devices.length; i++) {
 								var ip = devices[i].ip;
-								var url = "http://" + ip + ":" + userPort.textContent + "/receive";
-								var xhrCheck = new XMLHttpRequest();
-								xhrCheck.addEventListener("readystatechange", function() {
-									console.log(xhrCheck.responseText);
-									if(xhr.readyState == XMLHttpRequest.DONE) {
-										var device = '<div class="device"><span class="device-ip">' + ip + '</span><button class="send-button">Send File</button></div>';
-										deviceList.innerHTML += device;
-									}
-								});
-								xhrCheck.open("GET", url, true);
-								xhrCheck.send();
+								APIRequest({ action:"check-device", ip:ip });
+							}
+						}
+						else if(action == "check-device") {
+							var status = response.status;
+							if(status == "active") {
+								if(document.getElementsByClassName("loading-overlay").length > 0) {
+									document.getElementsByClassName("loading-overlay")[0].remove();
+								}
+								if(!document.getElementId(response.ip)) {
+									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button">Send File</button></div>';
+									deviceList.innerHTML += device;
+								}
 							}
 						}
 					}

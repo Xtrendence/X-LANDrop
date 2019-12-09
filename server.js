@@ -10,7 +10,7 @@ const appServer = app.listen(appPort);
 
 const fs = require("fs");
 const path = require("path");
-const cors = require("cors");
+const request = require("request");
 const ip = require("ip");
 const find = require("local-devices");
 const crypto = require("crypto");
@@ -45,10 +45,14 @@ local.post("/api", function(req, res) {
 				res.send({ action:"get-devices", list:devices });
 			});
 		}
+		else if(action == "check-device") {
+			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
+			request({ uri:url }, function(error, response, body) {
+				res.send({ action:"check-device", ip:req.body.ip, status:body });
+			});
+		}
 	}
 });
-
-app.use(cors({ origin:"*" }));
 
 app.get("/", function(req, res) {
 	res.send("What are you looking for here?");
