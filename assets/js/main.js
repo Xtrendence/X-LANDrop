@@ -6,16 +6,11 @@ document.addEventListener("DOMContentLoaded", function() {
 	var userPort = document.getElementsByClassName("user-port")[0];
 
 	APIRequest({ token:token, action:"get-ip" });
-
 	APIRequest({ token:token, action:"get-devices" });
-
-	var updateIP = setInterval(function() {
-		APIRequest({ token:token, action:"get-ip" });
-	}, 3000);
 
 	var scanDevices = setInterval(function() {
 		APIRequest({ token:token, action:"get-devices" });
-	}, 2500);
+	}, 3500);
 
 	if(detectMobile()) {
 		body.id = "mobile";
@@ -36,6 +31,11 @@ document.addEventListener("DOMContentLoaded", function() {
 						if(action == "get-ip") {
 							userIP.textContent = response.ip;
 							userPort.textContent = response.port;
+							if(empty(response.ip) || empty(response.port)) {
+								setTimeout(function() {
+									APIRequest({ token:token, action:"get-ip" });
+								}, 2000);
+							}
 						}
 						else if(action == "get-devices") {
 							var devices = response.list;
@@ -57,10 +57,9 @@ document.addEventListener("DOMContentLoaded", function() {
 							}
 							else if(status != "active" && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
-							}
-
-							if(empty(deviceList.innerHTML)) {
-								deviceList.innerHTML = '<button class="loading-overlay">No Devices Found...</button>';
+								if(empty(deviceList.innerHTML)) {
+									deviceList.innerHTML = '<button class="loading-overlay">No Devices Found...</button>';
+								}
 							}
 						}
 					}
@@ -91,7 +90,8 @@ function toEpoch(date){
 
 // Check if variable content is empty.
 function empty(string) {
-	if(string != null && typeof string != "undefined" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
+	var string = string.toString();
+	if(string != "null" && typeof string != "undefined" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
 		return false;
 	}
 	return true;

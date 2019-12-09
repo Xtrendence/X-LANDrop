@@ -1,7 +1,7 @@
 // Changeable Variables
 const localPort = 6968;
 const appPort = 6969;
-const inactiveTime = 5;
+const inactiveTime = 7;
 
 const express = require("express");
 const session = require("express-session");
