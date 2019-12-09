@@ -21,7 +21,15 @@ const aes = require("aes-js");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 
-const download = multer({ dest:"./" });
+var storage = multer.diskStorage({
+	destination: function(req, file, cb) {
+		cb(null, "./files/")
+	},
+	filename: function(req, file, cb) {
+		cb(null, epoch() + " - " + file.originalname.replace(/[/\\?%*:|"<>]/g, '-'))
+	}
+});
+const download = multer({ storage:storage });
 
 var lastActive = epoch();
 
