@@ -1,28 +1,38 @@
-const port = 6969;
+const localPort = 6968;
+const appPort = 6969;
 
 const express = require("express");
 const session = require("express-session");
+const local = express();
 const app = express();
-const server = app.listen(port);
+const localServer = local.listen(localPort, "localhost");
+const appServer = app.listen(appPort);
 
 const fs = require("fs");
 const path = require("path");
 const ip = require("ip");
 const find = require("local-devices");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
 const bodyParser = require("body-parser");
 
-app.set("view engine", "ejs");
-app.use("/assets", express.static("assets"));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+const userToken = generateToken();
 
-app.get("/", function(req, res) {
-	res.render("app");
+local.set("view engine", "ejs");
+local.use("/assets", express.static("assets"));
+local.use(bodyParser.urlencoded({ extended: true }));
+local.use(bodyParser.json());
+
+local.get("/", function(req, res) {
+	res.render("app", { token:userToken });
 });
 
-app.post("/send", function(req, res) {
+app.get("/", function(req, res) {
+	res.send("What are you looking for here?");
+});
+
+local.post("/send", function(req, res) {
 
 });
 
@@ -30,15 +40,18 @@ app.post("/receive", function(req, res) {
 
 });
 
-app.post("/api", function(req, res) {
-	var action = req.body.action;
-	if(action == "get-ip") {
-		res.send({ action:"get-ip", ip:ip.address(), port:port });
-	}
-	else if(action == "get-devices") {
-		find().then(function(devices) {
-			res.send({ action:"get-devices", list:devices });
-		});
+local.post("/api", function(req, res) {
+	var token = req.body.token;
+	if(token == userToken) {
+		var action = req.body.action;
+		if(action == "get-ip") {
+			res.send({ action:"get-ip", ip:ip.address(), port:appPort });
+		}
+		else if(action == "get-devices") {
+			find().then(function(devices) {
+				res.send({ action:"get-devices", list:devices });
+			});
+		}
 	}
 });
 
@@ -62,6 +75,13 @@ function aesDecrypt(ciphertext, key, iv) {
 	return decryptedText;
 }
 
+// Generate a token.
+function generateToken() {
+	var salt1 = bcrypt.genSaltSync();
+	var salt2 = bcrypt.genSaltSync();
+	return bcrypt.hashSync(salt1 + salt2, 10);
+}
+
 // Get current UNIX timestamp.
 function epoch() {
 	var date = new Date();
@@ -80,4 +100,5 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
-console.log("Running At: " + ip.address() + ":" + port);
+console.log("Local: " + ip.address() + ":" + localPort);
+console.log("App: " + ip.address() + ":" + appPort);

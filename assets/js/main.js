@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
+	var token = document.getElementsByClassName("user-token")[0].textContent;
 	var body = document.getElementsByTagName("body")[0];
 	var deviceList = document.getElementsByClassName("device-list")[0];
 	var userIP = document.getElementsByClassName("user-ip")[0];
 	var userPort = document.getElementsByClassName("user-port")[0];
 
-	APIRequest({ action:"get-ip" });
-	APIRequest({ action:"get-devices" });
+	APIRequest({ token:token, action:"get-ip" });
+	APIRequest({ token:token, action:"get-devices" });
 
 	if(detectMobile()) {
 		body.id = "mobile";
