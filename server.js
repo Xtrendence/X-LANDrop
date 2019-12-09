@@ -57,6 +57,7 @@ local.post("/api", function(req, res) {
 				res.send({ action:"check-device", ip:req.body.ip, status:body });
 			});
 		}
+		console.log(epoch() - lastActive);
 	}
 });
 
