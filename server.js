@@ -1,5 +1,7 @@
+// Changeable Variables
 const localPort = 6968;
 const appPort = 6969;
+const inactiveTime = 5;
 
 const express = require("express");
 const session = require("express-session");
@@ -66,7 +68,7 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
-	if(epoch() - lastActive < 10) {
+	if(epoch() - lastActive < inactiveTime) {
 		res.send("active");
 	}
 	else {

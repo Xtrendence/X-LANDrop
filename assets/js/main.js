@@ -11,11 +11,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	var updateIP = setInterval(function() {
 		APIRequest({ token:token, action:"get-ip" });
-	}, 2500);
+	}, 3000);
 
 	var scanDevices = setInterval(function() {
 		APIRequest({ token:token, action:"get-devices" });
-	}, 5000);
+	}, 2500);
 
 	if(detectMobile()) {
 		body.id = "mobile";
@@ -57,6 +57,10 @@ document.addEventListener("DOMContentLoaded", function() {
 							}
 							else if(status != "active" && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
+							}
+
+							if(empty(deviceList.innerHTML)) {
+								deviceList.innerHTML = '<button class="loading-overlay">No Devices Found...</button>';
 							}
 						}
 					}
