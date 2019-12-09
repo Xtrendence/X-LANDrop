@@ -53,6 +53,7 @@ local.post("/api", function(req, res) {
 		else if(action == "check-device") {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
 			request({ uri:url }, function(error, response, body) {
+				console.log(body);
 				res.send({ action:"check-device", ip:req.body.ip, status:body });
 			});
 		}
