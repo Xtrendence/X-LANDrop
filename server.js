@@ -66,7 +66,7 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
-	if(epoch() - lastActive > 10000) {
+	if(epoch() - lastActive < 10000) {
 		res.send("active");
 	}
 	else {
