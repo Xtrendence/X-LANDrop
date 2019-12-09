@@ -10,7 +10,7 @@ const appServer = app.listen(appPort);
 
 const fs = require("fs");
 const path = require("path");
-const request = require("request");
+const cors = require("cors");
 const ip = require("ip");
 const find = require("local-devices");
 const crypto = require("crypto");
@@ -19,8 +19,6 @@ const aes = require("aes-js");
 const bodyParser = require("body-parser");
 
 const userToken = generateToken();
-
-var activeDevices = [];
 
 local.set("view engine", "ejs");
 local.use("/assets", express.static("assets"));
@@ -49,6 +47,8 @@ local.post("/api", function(req, res) {
 		}
 	}
 });
+
+app.use(cors({ origin:"*" }));
 
 app.get("/", function(req, res) {
 	res.send("What are you looking for here?");
