@@ -57,7 +57,7 @@ app.post("/receive", function(req, res) {
 
 app.get("/receive", function(req, res) {
 	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.send("active");
+	res.sendStatus(200);
 });
 
 // Encrypt data with AES-256-CTR.

@@ -37,14 +37,12 @@ document.addEventListener("DOMContentLoaded", function() {
 								var url = "http://" + ip + ":" + userPort.textContent + "/receive";
 								var xhrCheck = new XMLHttpRequest();
 								xhrCheck.addEventListener("readystatechange", function() {
-									if(xhrCheck.readyState == XMLHttpRequest.DONE) {
-										if(xhrCheck.responseText == "active") {
-											if(document.getElementsByClassName("loading-overlay").length > 0) {
-												document.getElementsByTagName("loading-overlay")[0].remove();
-											}
-											var device = '<div class="device"><span class="device-ip">' + ip + '</span><button class="send-button">Send File</button></div>';
-											deviceList.innerHTML += device;
+									if(xhrCheck.status == 200) {
+										if(document.getElementsByClassName("loading-overlay").length > 0) {
+											document.getElementsByTagName("loading-overlay")[0].remove();
 										}
+										var device = '<div class="device"><span class="device-ip">' + ip + '</span><button class="send-button">Send File</button></div>';
+										deviceList.innerHTML += device;
 									}
 								});
 								xhrCheck.open("GET", url, true);
