@@ -20,6 +20,14 @@ const bodyParser = require("body-parser");
 
 const userToken = generateToken();
 
+var activity = { active:false, time:epoch() };
+var checkActivity = setInterval(function() {
+	if(epoch() - activity.time > 10000) {
+		activity.active = false;
+		activity.time = epoch() - 10;
+	}
+}, 10000);
+
 local.set("view engine", "ejs");
 local.use("/assets", express.static("assets"));
 local.use(bodyParser.urlencoded({ extended: true }));
@@ -44,6 +52,8 @@ local.post("/api", function(req, res) {
 			find().then(function(devices) {
 				res.send({ action:"get-devices", list:devices });
 			});
+			activity.active = true;
+			activity.time = epoch();
 		}
 		else if(action == "check-device") {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
@@ -63,7 +73,12 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
-	res.send("active");
+	if(activity.active) {
+		res.send("active - " + (epoch() - activity.time).toString());
+	}
+	else {
+		res.send("inactive - " + (epoch() - activity.time).toString());
+	}
 });
 
 // Encrypt data with AES-256-CTR.

@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						}
 						else if(action == "check-device") {
 							var status = response.status;
-							if(status == "active" && response.ip != userIP.textContent) {
+							if(status.includes("active") && response.ip != userIP.textContent) {
 								if(document.getElementsByClassName("loading-overlay").length > 0) {
 									document.getElementsByClassName("loading-overlay")[0].remove();
 								}
