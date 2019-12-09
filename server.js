@@ -25,18 +25,10 @@ local.use(bodyParser.urlencoded({ extended: true }));
 local.use(bodyParser.json());
 
 local.get("/", function(req, res) {
-	res.render("app", { token:userToken });
-});
-
-app.get("/", function(req, res) {
-	res.send("What are you looking for here?");
+	res.render("local", { token:userToken });
 });
 
 local.post("/send", function(req, res) {
-
-});
-
-app.post("/receive", function(req, res) {
 
 });
 
@@ -53,6 +45,18 @@ local.post("/api", function(req, res) {
 			});
 		}
 	}
+});
+
+app.get("/", function(req, res) {
+	res.send("What are you looking for here?");
+});
+
+app.post("/receive", function(req, res) {
+
+});
+
+app.get("/receive", function(req, res) {
+	res.send("active");
 });
 
 // Encrypt data with AES-256-CTR.

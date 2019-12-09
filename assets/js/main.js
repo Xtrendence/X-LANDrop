@@ -18,28 +18,43 @@ document.addEventListener("DOMContentLoaded", function() {
 	function APIRequest(data) {
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener("readystatechange", function() {
-			if(!empty(xhr.responseText)) {
-				try {
-					var response = JSON.parse(xhr.responseText);
-					var action = response.action;
+			if(xhr.readyState == XMLHttpRequest.DONE) {
+				if(!empty(xhr.responseText)) {
+					try {
+						var response = JSON.parse(xhr.responseText);
+						var action = response.action;
 
-					console.log(response);
+						console.log(response);
 
-					if(action == "get-ip") {
-						userIP.textContent = response.ip;
-						userPort.textContent = response.port;
-					}
-					else if(action == "get-devices") {
-						deviceList.innerHTML = "";
-						var devices = response.list;
-						for(var i = 0; i < devices.length; i++) {
-							var device = '<div class="device"><span class="device-ip">' + devices[i].ip + '</span><button class="send-button">Send File</button></div>';
-							deviceList.innerHTML += device;
+						if(action == "get-ip") {
+							userIP.textContent = response.ip;
+							userPort.textContent = response.port;
+						}
+						else if(action == "get-devices") {
+							var devices = response.list;
+							for(var i = 0; i < devices.length; i++) {
+								var ip = devices[i].ip;
+								var url = "http://" + ip + ":" + userPort.textContent + "/receive";
+								var xhrCheck = new XMLHttpRequest();
+								xhrCheck.addEventListener("readystatechange", function() {
+									if(xhrCheck.readyState == XMLHttpRequest.DONE) {
+										if(xhrCheck.responseText == "active") {
+											if(document.getElementsByClassName("loading-overlay").length > 0) {
+												document.getElementsByTagName("loading-overlay")[0].remove();
+											}
+											var device = '<div class="device"><span class="device-ip">' + ip + '</span><button class="send-button">Send File</button></div>';
+											deviceList.innerHTML += device;
+										}
+									}
+								});
+								xhrCheck.open("GET", url, true);
+								xhrCheck.send();
+							}
 						}
 					}
-				}
-				catch(e) {
-					console.log(e);
+					catch(e) {
+						console.log(e);
+					}
 				}
 			}
 		});
