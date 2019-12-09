@@ -63,14 +63,16 @@ document.addEventListener("DOMContentLoaded", function() {
 										input.name = "files";
 										input.multiple = true;
 
-										var data = new FormData();
-
 										body.appendChild(input);
 
 										input.click();
 
 										input.addEventListener("change", function() {
-											data.append("files", input.files);
+											var formData = new FormData();
+
+											for(var i = 0; i < input.files.length; i++) {
+												formData.append("files", input.files[i]);
+											}
 
 											var xhrUpload = new XMLHttpRequest();
 
@@ -81,8 +83,7 @@ document.addEventListener("DOMContentLoaded", function() {
 											});
 
 											xhrUpload.open("POST", "http://" + response.ip + ":" + userPort.textContent + "/receive", true);
-											xhrUpload.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-											xhrUpload.send(data);
+											xhrUpload.send(formData);
 										});
 									});
 								}
