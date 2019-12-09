@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
 											});
 
 											xhrUpload.open("POST", "http://" + response.ip + ":" + userPort.textContent + "/receive", true);
-											// xhrUpload.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+											xhrUpload.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 											xhrUpload.send(data);
 										});
 									});
