@@ -21,8 +21,7 @@ const aes = require("aes-js");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 
-const downloadDirectory = require("downloads-folder");
-const download = multer({ dest:downloadDirectory });
+const download = multer({ dest:"./" });
 
 var lastActive = epoch();
 
@@ -84,7 +83,7 @@ app.get("/", function(req, res) {
 });
 
 app.post("/receive", download.array("files", 12), function(req, res) {
-	console.log(req);
+	var files = req.files;
 });
 
 app.get("/receive", function(req, res) {
