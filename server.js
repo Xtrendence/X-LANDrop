@@ -86,7 +86,7 @@ app.get("/", function(req, res) {
 app.post("/receive", download.array("files", 12), function(req, res, next) {
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	var files = req.files;
-	console.log(files);
+	console.log(req);
 })
 
 app.get("/receive", function(req, res) {
