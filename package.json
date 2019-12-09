@@ -1,0 +1,33 @@
+{
+  "name": "x-landrop",
+  "version": "1.0.0",
+  "description": "An AirDrop-like application for sharing files between devices on the same network.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xtrendence/X-LANDrop.git"
+  },
+  "author": "Xtrendence",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Xtrendence/X-LANDrop/issues"
+  },
+  "homepage": "https://github.com/Xtrendence/X-LANDrop#readme",
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "body-parser": "^1.19.0",
+    "crypto": "^1.0.1",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "fs": "0.0.1-security",
+    "ip": "^1.1.5",
+    "local-devices": "^3.0.0",
+    "nodemon": "^2.0.1",
+    "path": "^0.12.7"
+  }
+}
