@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", function() {
 	APIRequest({ token:token, action:"get-ip" });
 	APIRequest({ token:token, action:"get-devices" });
 
+	var scanDevices = setInterval(function() {
+		APIRequest({ token:token, action:"get-devices" });
+	}, 5000);
+
 	if(detectMobile()) {
 		body.id = "mobile";
 	}
