@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								var url = "http://" + ip + ":" + userPort.textContent + "/receive";
 								var xhrCheck = new XMLHttpRequest();
 								xhrCheck.addEventListener("readystatechange", function() {
+									console.log(xhrCheck.responseText);
 									if(xhrCheck.readyState == XMLHttpRequest.DONE) {
 										if(xhrCheck.responseText == "active") {
 											if(document.getElementsByClassName("loading-overlay").length > 0) {

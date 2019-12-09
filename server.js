@@ -47,13 +47,6 @@ local.post("/api", function(req, res) {
 	}
 });
 
-app.use(function(req, res, next) {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type'); // If needed
-    res.setHeader('Access-Control-Allow-Credentials', true); // If needed
-});
-
 app.get("/", function(req, res) {
 	res.send("What are you looking for here?");
 });
@@ -63,6 +56,10 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type'); // If needed
+    res.setHeader('Access-Control-Allow-Credentials', true); // If needed
 	res.send("active");
 });
 
