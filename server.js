@@ -40,6 +40,7 @@ local.post("/send", function(req, res) {
 local.post("/api", function(req, res) {
 	var token = req.body.token;
 	if(token == userToken) {
+		lastActive = epoch();
 		var action = req.body.action;
 		if(action == "get-ip") {
 			res.send({ action:"get-ip", ip:ip.address(), port:appPort });
@@ -48,7 +49,6 @@ local.post("/api", function(req, res) {
 			find().then(function(devices) {
 				res.send({ action:"get-devices", list:devices });
 			});
-			lastActive = epoch();
 		}
 		else if(action == "check-device") {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
