@@ -58,8 +58,7 @@ app.post("/receive", function(req, res) {
 
 });
 
-app.post("/receive", function(req, res) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
+app.get("/receive", function(req, res) {
 	res.send("active");
 });
 

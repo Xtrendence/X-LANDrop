@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
 										deviceList.innerHTML += device;
 									}
 								});
-								xhrCheck.open("POST", url, true);
-								xhrCheck.send(null);
+								xhrCheck.open("GET", url, true);
+								xhrCheck.send();
 							}
 						}
 					}
