@@ -50,6 +50,9 @@ document.addEventListener("DOMContentLoaded", function() {
 									deviceList.innerHTML += device;
 								}
 							}
+							else if(status != "active" && document.getElementById(response.ip)) {
+								document.getElementById(response.ip).remove();
+							}
 						}
 					}
 					catch(e) {
