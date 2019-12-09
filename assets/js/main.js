@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
 									deviceList.innerHTML += device;
 								}
 							}
-							else if(status != "active" && document.getElementById(response.ip)) {
+							else if(status != "active" || empty(status) && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
 								if(empty(deviceList.innerHTML)) {
 									deviceList.innerHTML = '<button class="loading-overlay">No Devices Found...</button>';
