@@ -22,9 +22,10 @@ const userToken = generateToken();
 
 var activity = { active:false, time:epoch() };
 var checkActivity = setInterval(function() {
+	console.log(epoch() - activity.time);
 	if(epoch() - activity.time > 10000) {
 		activity.active = false;
-		activity.time = epoch() - 10;
+		activity.time = epoch() - 20;
 	}
 }, 10000);
 
@@ -54,6 +55,7 @@ local.post("/api", function(req, res) {
 			});
 			activity.active = true;
 			activity.time = epoch();
+			console.log("check");
 		}
 		else if(action == "check-device") {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
@@ -73,11 +75,11 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
-	if(activity.active) {
+	if(activity.active === true) {
 		res.send("active - " + (epoch() - activity.time).toString());
 	}
 	else {
-		res.send("inactive - " + (epoch() - activity.time).toString());
+		res.send("suspended - " + (epoch() - activity.time).toString());
 	}
 });
 

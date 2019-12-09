@@ -6,7 +6,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	var userPort = document.getElementsByClassName("user-port")[0];
 
 	APIRequest({ token:token, action:"get-ip" });
+	
 	APIRequest({ token:token, action:"get-devices" });
+
+	var updateIP = setInterval(function() {
+		APIRequest({ token:token, action:"get-ip" });
+	}, 2500);
 
 	var scanDevices = setInterval(function() {
 		APIRequest({ token:token, action:"get-devices" });
