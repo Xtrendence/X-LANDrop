@@ -60,27 +60,29 @@ document.addEventListener("DOMContentLoaded", function() {
 										input.classList.add("hidden");
 										input.classList.add("file-input")
 										input.type = "file";
+										input.name = "files";
 										input.multiple = true;
 
 										var data = new FormData();
-
-										for(var i = 0; i < input.files.length; i++) {
-											data.append("file", input.files[i]);
-										}
 
 										body.appendChild(input);
 
 										input.click();
 
 										input.addEventListener("change", function() {
+											for(var i = 0; i < input.files.length; i++) {
+												data.append(i, input.files[i]);
+											}
+
 											var xhrUpload = new XMLHttpRequest();
+
 											xhrUpload.addEventListener("readystatechange", function() {
 												if(xhrUpload.readyState == XMLHttpRequest.DONE) {
 
 												}
 											});
+
 											xhrUpload.open("POST", "http://" + response.ip + ":" + userPort.textContent + "/receive", true);
-											xhrUpload.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 											xhrUpload.send(data);
 										});
 									});
@@ -104,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			if(document.getElementsByClassName("page-overlay").length > 0) {
 				document.getElementsByClassName("page-overlay").remove();
 			}
-			body.innerHTML += '<button class="page-overlay">Error. API inactive.</button>';
+			body.innerHTML += '<button class="page-overlay">Error. API Inactive.</button>';
 		});
 		xhr.open("POST", "/api", true);
 		xhr.setRequestHeader("Content-Type", "application/json");
