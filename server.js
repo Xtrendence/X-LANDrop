@@ -10,6 +10,7 @@ const appServer = app.listen(appPort);
 
 const fs = require("fs");
 const path = require("path");
+const request = require("request");
 const ip = require("ip");
 const find = require("local-devices");
 const crypto = require("crypto");
@@ -18,6 +19,8 @@ const aes = require("aes-js");
 const bodyParser = require("body-parser");
 
 const userToken = generateToken();
+
+var activeDevices = [];
 
 local.set("view engine", "ejs");
 local.use("/assets", express.static("assets"));
@@ -55,9 +58,9 @@ app.post("/receive", function(req, res) {
 
 });
 
-app.get("/receive", function(req, res) {
+app.post("/receive", function(req, res) {
 	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.sendStatus(200);
+	res.send("active");
 });
 
 // Encrypt data with AES-256-CTR.

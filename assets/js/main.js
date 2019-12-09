@@ -37,16 +37,14 @@ document.addEventListener("DOMContentLoaded", function() {
 								var url = "http://" + ip + ":" + userPort.textContent + "/receive";
 								var xhrCheck = new XMLHttpRequest();
 								xhrCheck.addEventListener("readystatechange", function() {
-									if(xhrCheck.status == 200) {
-										if(document.getElementsByClassName("loading-overlay").length > 0) {
-											document.getElementsByTagName("loading-overlay")[0].remove();
-										}
+									console.log(xhrCheck.responseText);
+									if(xhr.readyState == XMLHttpRequest.DONE) {
 										var device = '<div class="device"><span class="device-ip">' + ip + '</span><button class="send-button">Send File</button></div>';
 										deviceList.innerHTML += device;
 									}
 								});
-								xhrCheck.open("GET", url, true);
-								xhrCheck.send();
+								xhrCheck.open("POST", url, true);
+								xhrCheck.send(null);
 							}
 						}
 					}
