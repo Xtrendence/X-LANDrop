@@ -20,14 +20,7 @@ const bodyParser = require("body-parser");
 
 const userToken = generateToken();
 
-var activity = { active:false, time:epoch() };
-var checkActivity = setInterval(function() {
-	console.log(epoch() - activity.time);
-	if(epoch() - activity.time > 10000) {
-		activity.active = false;
-		activity.time = epoch() - 20;
-	}
-}, 10000);
+var lastActive = epoch();
 
 local.set("view engine", "ejs");
 local.use("/assets", express.static("assets"));
@@ -53,9 +46,7 @@ local.post("/api", function(req, res) {
 			find().then(function(devices) {
 				res.send({ action:"get-devices", list:devices });
 			});
-			activity.active = true;
-			activity.time = epoch();
-			console.log("check");
+			lastActive = epoch();
 		}
 		else if(action == "check-device") {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
@@ -75,11 +66,11 @@ app.post("/receive", function(req, res) {
 });
 
 app.get("/receive", function(req, res) {
-	if(activity.active === true) {
-		res.send("active - " + (epoch() - activity.time).toString());
+	if(epoch() - lastActive > 10000) {
+		res.send("active");
 	}
 	else {
-		res.send("suspended - " + (epoch() - activity.time).toString());
+		res.send("inactive");
 	}
 });
 

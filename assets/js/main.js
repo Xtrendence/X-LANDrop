@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	var userPort = document.getElementsByClassName("user-port")[0];
 
 	APIRequest({ token:token, action:"get-ip" });
-	
+
 	APIRequest({ token:token, action:"get-devices" });
 
 	var updateIP = setInterval(function() {
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						}
 						else if(action == "check-device") {
 							var status = response.status;
-							if(status.includes("active") && response.ip != userIP.textContent) {
+							if(status == "active" && response.ip != userIP.textContent) {
 								if(document.getElementsByClassName("loading-overlay").length > 0) {
 									document.getElementsByClassName("loading-overlay")[0].remove();
 								}
