@@ -1,15 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
-	var token = document.getElementsByClassName("user-token")[0].textContent;
 	var body = document.getElementsByTagName("body")[0];
 	var deviceList = document.getElementsByClassName("device-list")[0];
 	var userIP = document.getElementsByClassName("user-ip")[0];
 	var userPort = document.getElementsByClassName("user-port")[0];
 
-	APIRequest({ token:token, action:"get-ip" });
-	APIRequest({ token:token, action:"get-devices" });
+	APIRequest({ action:"get-ip" });
+	APIRequest({ action:"get-devices" });
 
 	var scanDevices = setInterval(function() {
-		APIRequest({ token:token, action:"get-devices" });
+		APIRequest({ action:"get-devices" });
 	}, 3500);
 
 	if(detectMobile()) {
@@ -33,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							userPort.textContent = response.port;
 							if(empty(response.ip) || empty(response.port)) {
 								setTimeout(function() {
-									APIRequest({ token:token, action:"get-ip" });
+									APIRequest({ action:"get-ip" });
 								}, 2000);
 							}
 						}
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							if(!empty(response.list)) {
 								var devices = response.list;
 								for(var i = 0; i < devices.length; i++) {
-									APIRequest({ token:token, action:"check-device", ip:devices[i] });
+									APIRequest({ action:"check-device", ip:devices[i] });
 								}
 							}
 						}
@@ -52,8 +51,39 @@ document.addEventListener("DOMContentLoaded", function() {
 									document.getElementsByClassName("loading-overlay")[0].remove();
 								}
 								if(!document.getElementById(response.ip)) {
-									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button">Send File</button></div>';
+									var hashedIP = md5(response.ip);
+									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 									deviceList.innerHTML += device;
+
+									document.getElementById(hashedIP).addEventListener("click", function() {
+										var input = document.createElement("input");
+										input.classList.add("hidden");
+										input.classList.add("file-input")
+										input.type = "file";
+										input.multiple = true;
+
+										var data = new FormData();
+
+										for(var i = 0; i < input.files.length; i++) {
+											data.append("file", input.files[i]);
+										}
+
+										body.appendChild(input);
+
+										input.click();
+
+										input.addEventListener("change", function() {
+											var xhrUpload = new XMLHttpRequest();
+											xhrUpload.addEventListener("readystatechange", function() {
+												if(xhrUpload.readyState == XMLHttpRequest.DONE) {
+
+												}
+											});
+											xhrUpload.open("POST", "http://" + response.ip + ":" + userPort.textContent + "/receive", true);
+											xhrUpload.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+											xhrUpload.send(data);
+										});
+									});
 								}
 							}
 							else if(status != "active" || empty(status) && document.getElementById(response.ip)) {
@@ -69,6 +99,12 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 				}
 			}
+		});
+		xhr.addEventListener("error", function(error) {
+			if(document.getElementsByClassName("page-overlay").length > 0) {
+				document.getElementsByClassName("page-overlay").remove();
+			}
+			body.innerHTML += '<button class="page-overlay">Error. API inactive.</button>';
 		});
 		xhr.open("POST", "/api", true);
 		xhr.setRequestHeader("Content-Type", "application/json");

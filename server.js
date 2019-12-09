@@ -18,9 +18,11 @@ const scan = require("evilscan");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
+const multer = require("multer");
 const bodyParser = require("body-parser");
 
-const userToken = generateToken();
+const downloadDirectory = require("downloads-folder");
+const download = multer({ dest:downloadDirectory });
 
 var lastActive = epoch();
 
@@ -30,68 +32,61 @@ local.use(bodyParser.urlencoded({ extended: true }));
 local.use(bodyParser.json());
 
 local.get("/", function(req, res) {
-	res.render("local", { token:userToken });
-});
-
-local.post("/send", function(req, res) {
-
+	res.render("local");
 });
 
 local.post("/api", function(req, res) {
-	var token = req.body.token;
-	if(token == userToken) {
-		lastActive = epoch();
-		var action = req.body.action;
-		if(action == "get-ip") {
-			res.send({ action:"get-ip", ip:ip.address(), port:appPort });
-		}
-		else if(action == "get-devices") {
-			var options = {
-				target:ip.address() + "/24",
-				port:appPort,
-				status:"TROU",
-				banner:true
-			};
+	lastActive = epoch();
+	var action = req.body.action;
+	if(action == "get-ip") {
+		res.send({ action:"get-ip", ip:ip.address(), port:appPort });
+	}
+	else if(action == "get-devices") {
+		var options = {
+			target:ip.address() + "/24",
+			port:appPort,
+			status:"TROU",
+			banner:true
+		};
 
-			var devices = [];
+		var devices = [];
 
-			var scanner = new scan(options);
+		var scanner = new scan(options);
 
-			scanner.on("result", function(data) {
-				if(data.status == "open" && data.ip != ip.address()) {
-					devices.push(data.ip);
-				}
-			});
-
-			scanner.on("error", function(error) {
-				console.log(error);
-			});
-
-			scanner.on("done", function() {
-				res.send({ action:"get-devices", list:devices });
-			});
-
-			scanner.run();
-		}
-		else if(action == "check-device") {
-			if(req.body.ip != ip.address()) {
-				var url = "http://" + req.body.ip + ":" + appPort + "/receive";
-				request({ uri:url }, function(error, response, body) {
-					console.log(body);
-					res.send({ action:"check-device", ip:req.body.ip, status:body });
-				});
+		scanner.on("result", function(data) {
+			if(data.status == "open" && data.ip != ip.address()) {
+				devices.push(data.ip);
 			}
+		});
+
+		scanner.on("error", function(error) {
+			console.log(error);
+		});
+
+		scanner.on("done", function() {
+			res.send({ action:"get-devices", list:devices });
+		});
+
+		scanner.run();
+	}
+	else if(action == "check-device") {
+		if(req.body.ip != ip.address()) {
+			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
+			request({ uri:url }, function(error, response, body) {
+				res.send({ action:"check-device", ip:req.body.ip, status:body });
+			});
 		}
 	}
 });
 
 app.get("/", function(req, res) {
-	res.send("What are you looking for here?");
+	res.send('What are you looking for here? Did you mean to go <a href="./receive">here</a>?');
 });
 
-app.post("/receive", function(req, res) {
-
-});
+app.post("/receive", download.array("files", 12), function(req, res, next) {
+	var files = req.files;
+	console.log(files);
+})
 
 app.get("/receive", function(req, res) {
 	if(epoch() - lastActive < inactiveTime) {
