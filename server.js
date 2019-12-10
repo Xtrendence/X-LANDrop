@@ -100,6 +100,7 @@ app.get("/", function(req, res) {
 
 app.post("/receive", download.array("files", 12), function(req, res) {
 	var files = req.files;
+	res.send("sent");
 });
 
 app.get("/receive", function(req, res) {

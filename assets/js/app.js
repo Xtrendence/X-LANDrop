@@ -49,7 +49,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 			xhrUpload.addEventListener("readystatechange", function() {
 				if(xhrUpload.readyState == XMLHttpRequest.DONE) {
-					input.remove();
+					if(xhrUpload.responseText == "sent") {
+						input.remove();
+					}
 				}
 			});
 
