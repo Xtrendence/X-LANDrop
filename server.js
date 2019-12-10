@@ -12,6 +12,7 @@ const appServer = app.listen(appPort);
 
 const fs = require("fs");
 const path = require("path");
+const io = require("socket.io")(localServer);
 const request = require("request");
 const ip = require("ip");
 const scan = require("evilscan");
@@ -80,11 +81,18 @@ local.post("/api", function(req, res) {
 		if(req.body.ip != ip.address()) {
 			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
 			request({ uri:url }, function(error, response, body) {
-				res.send({ action:"check-device", ip:req.body.ip, status:body });
+				if(body != "inactive") {
+					res.send({ action:"check-device", ip:req.body.ip, status:"active" });
+				}
 			});
 		}
 	}
 });
+
+app.set("view engine", "ejs");
+app.use("/assets", express.static("assets"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get("/", function(req, res) {
 	res.send('What are you looking for here? Did you mean to go <a href="./receive">here</a>?');
@@ -96,7 +104,7 @@ app.post("/receive", download.array("files", 12), function(req, res) {
 
 app.get("/receive", function(req, res) {
 	if(epoch() - lastActive < inactiveTime) {
-		res.send("active");
+		res.render("app");
 	}
 	else {
 		res.send("inactive");
