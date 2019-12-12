@@ -55,6 +55,19 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			});
 
+			xhrUpload.upload.addEventListener("progress", function(e) {
+				if(e.lengthComputable) {
+					var percentage = (e.loaded / e.total) * 100;
+					if(percentage == 100) {
+						notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+					}
+				}
+			});
+
+			xhrUpload.addEventListener("error", function(error) {
+				notify("Error", "Couldn't upload file.", "rgb(20,20,20)", 4000);
+			});
+
 			xhrUpload.open("POST", url, true);
 			xhrUpload.send(formData);
 		});

@@ -2,6 +2,7 @@
 const localPort = 6968;
 const appPort = 6969;
 const inactiveTime = 7;
+const fileDirectory = "./files/";
 
 const express = require("express");
 const session = require("express-session");
@@ -24,10 +25,31 @@ const bodyParser = require("body-parser");
 
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, "./files/")
+		cb(null, fileDirectory)
 	},
 	filename: function(req, file, cb) {
-		cb(null, epoch() + " - " + file.originalname.replace(/[/\\?%*:|"<>]/g, '-'))
+		var count = 1;
+
+		var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
+		if(originalName.includes(".")) {
+			var parts = originalName.split(".");
+			var ext = parts[parts.length - 1];
+			var nameOnly = parts.slice(0, parts.length - 1);
+
+			var name = nameOnly + "." + ext;
+			while(fs.existsSync(path.join(__dirname, fileDirectory + name))) {
+				name = nameOnly + " (" + count + ")." + ext;
+			}
+		}
+		else {
+			var name = originalName;
+			while(fs.existsSync(path.join(__dirname, fileDirectory + name))) {
+				name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+			}
+		}
+		
+		
+		cb(null, name)
 	}
 });
 const download = multer({ storage:storage });

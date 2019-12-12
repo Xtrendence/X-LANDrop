@@ -170,3 +170,52 @@ button, input {
 	z-index:20;
 	background:rgba(0,0,0,0.9);
 }
+
+.notification-area {
+	z-index:666;
+	position:fixed;
+	left:0px;
+	bottom:0px;
+	padding:20px;
+	height:100%;
+	width:500px;
+	pointer-events:none;
+	overflow:hidden;
+	display:block;
+}
+.notification-wrapper {
+	display:block;
+	visibility:hidden;
+	position:relative;
+	margin-top:20px;
+	height:auto;
+}
+.notification-bubble {
+	position:absolute;
+	z-index:667;
+	left:-400px;
+	top:0;
+	max-width:400px;
+	padding:10px 15px 15px 15px;
+	background:rgb(50,50,50);
+	box-shadow:0 6px 10px rgba(60,60,60,0.2);
+	transition:left 0.4s;
+	overflow:hidden;
+	border-radius:10px;
+	color:rgb(245,245,245);
+	display:inline-block;
+}
+.notification-title-wrapper {
+	font-size:18px;
+	font-weight:bold;
+	color:rgb(245,245,245);
+	margin-top:10px;
+}
+.notification-description-wrapper {
+	margin-top:5px;
+	font-size:16px;
+	color:rgb(220,220,220);
+}
+.notification-description {
+	line-height:25px;
+}
