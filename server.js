@@ -56,6 +56,7 @@ var storage = multer.diskStorage({
 		cb(null, name)
 	}
 });
+
 const download = multer({ storage:storage });
 
 var lastActive = epoch();
@@ -71,6 +72,7 @@ local.get("/", function(req, res) {
 
 local.post("/api", function(req, res) {
 	lastActive = epoch();
+	
 	var action = req.body.action;
 	if(action == "get-ip") {
 		res.send({ action:"get-ip", ip:ip.address(), port:appPort });
@@ -105,8 +107,9 @@ local.post("/api", function(req, res) {
 	}
 	else if(action == "check-device") {
 		if(req.body.ip != ip.address()) {
-			var url = "http://" + req.body.ip + ":" + appPort + "/receive";
+			var url = "http://" + req.body.ip + ":" + appPort + "/status";
 			request({ uri:url }, function(error, response, body) {
+				console.log(body);
 				if(body != "inactive") {
 					res.send({ action:"check-device", ip:req.body.ip, status:"active" });
 				}
@@ -134,6 +137,16 @@ app.get("/receive", function(req, res) {
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	if(epoch() - lastActive < inactiveTime) {
 		res.render("app");
+	}
+	else {
+		res.send("inactive");
+	}
+});
+
+app.get("/status", function(req, res) {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	if(epoch() - lastActive < inactiveTime) {
+		res.send("active");
 	}
 	else {
 		res.send("inactive");
