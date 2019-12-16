@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						}
 						else if(action == "check-device") {
 							var status = response.status;
+							console.log(status);
 							if(status == "active" && response.ip != userIP.textContent) {
 								if(document.getElementsByClassName("loading-overlay").length > 0) {
 									document.getElementsByClassName("loading-overlay")[0].remove();
@@ -104,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
 									});
 								}
 							}
-							else if(status != "active" || empty(status) && document.getElementById(response.ip)) {
+							else if(status != "active" && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
 								if(empty(deviceList.innerHTML)) {
 									deviceList.innerHTML = '<button class="loading-overlay">No Devices Found</button>';

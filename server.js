@@ -109,10 +109,12 @@ local.post("/api", function(req, res) {
 		if(req.body.ip != ip.address()) {
 			var url = "http://" + req.body.ip + ":" + appPort + "/status";
 			request({ uri:url }, function(error, response, body) {
-				console.log(body);
-				if(body != "inactive") {
-					res.send({ action:"check-device", ip:req.body.ip, status:"active" });
+				var status = "inactive";
+				if(body == "active") {
+					var status = "active";
 				}
+				
+				res.send({ action:"check-device", ip:req.body.ip, status:status });
 			});
 		}
 	}
