@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	var hashedIP = md5(ip);
 
-	var device = '<div class="device" id="' + ip + '"><span class="device-ip">' + ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
+	var device = '<div class="device" id="' + ip + '"><button class="progress"></button><span class="device-ip">' + ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 
 	deviceList.innerHTML += device;
 
@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		input.multiple = true;
 
 		body.appendChild(input);
+		
+		var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
 
 		input.click();
 
@@ -57,9 +59,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
 			xhrUpload.upload.addEventListener("progress", function(e) {
 				if(e.lengthComputable) {
-					var percentage = (e.loaded / e.total) * 100;
+					var percentage = ((e.loaded / e.total) * 100).toFixed(2);
+					
+					progressBar.style.width = percentage + "%";
+					
+					if(percentage > 20) {
+						progressBar.textContent = Math.floor(percentage) + "%";
+					}
+					
 					if(percentage == 100) {
-						notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+						if(input.files.length > 1) {
+							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						else {
+							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						
+						setTimeout(function() {
+							progressBar.textContent = "";
+							progressBar.removeAttribute("style");
+						}, 1500);
 					}
 				}
 			});

@@ -23,6 +23,10 @@ const aes = require("aes-js");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 
+if(!fs.existsSync(fileDirectory)) {
+	fs.mkdirSync(fileDirectory);
+}
+
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, fileDirectory)
@@ -121,11 +125,13 @@ app.get("/", function(req, res) {
 });
 
 app.post("/receive", download.array("files", 12), function(req, res) {
+	res.setHeader("Access-Control-Allow-Origin", "*");
 	var files = req.files;
 	res.send("sent");
 });
 
 app.get("/receive", function(req, res) {
+	res.setHeader("Access-Control-Allow-Origin", "*");
 	if(epoch() - lastActive < inactiveTime) {
 		res.render("app");
 	}
