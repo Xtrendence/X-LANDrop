@@ -18,21 +18,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		body.id = "desktop";
 	}
 
-	var scanningAnimation = setInterval(function() {
-		var loadingOverlay = document.getElementsByClassName("loading-overlay")[0];
-		var text = loadingOverlay.textContent;
-
-		if(text == "Scanning...") {
-			loadingOverlay.textContent = "Scanning.";
-		}
-		else if(text == "Scanning.") {
-			loadingOverlay.textContent = "Scanning..";
-		}
-		else if(text == "Scanning..") {
-			loadingOverlay.textContent = "Scanning...";
-		}
-	}, 300);
-
 	function APIRequest(data) {
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener("readystatechange", function() {
@@ -61,11 +46,9 @@ document.addEventListener("DOMContentLoaded", function() {
 						}
 						else if(action == "check-device") {
 							var status = response.status;
-							console.log(status);
 							if(status == "active" && response.ip != userIP.textContent) {
 								if(document.getElementsByClassName("loading-overlay").length > 0) {
 									document.getElementsByClassName("loading-overlay")[0].remove();
-									clearInterval(scanningAnimation);
 								}
 								if(!document.getElementById(response.ip)) {
 									var hashedIP = md5(response.ip);
@@ -108,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							else if(status != "active" && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
 								if(empty(deviceList.innerHTML)) {
-									deviceList.innerHTML = '<button class="loading-overlay">No Devices Found</button>';
+									deviceList.innerHTML = '<button class="loading-overlay">Scanning...</button>';
 								}
 							}
 						}
