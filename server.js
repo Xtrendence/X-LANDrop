@@ -2,7 +2,6 @@
 const localPort = 6968;
 const appPort = 6969;
 const inactiveTime = 7;
-const fileDirectory = "./files/";
 
 const express = require("express");
 const session = require("express-session");
@@ -11,6 +10,7 @@ const app = express();
 const localServer = local.listen(localPort, "localhost");
 const appServer = app.listen(appPort);
 
+const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const io = require("socket.io")(localServer);
@@ -23,9 +23,7 @@ const aes = require("aes-js");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 
-if(!fs.existsSync(fileDirectory)) {
-	fs.mkdirSync(fileDirectory);
-}
+const fileDirectory = os.homedir() + "/Downloads/";
 
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
@@ -91,7 +89,6 @@ local.post("/api", function(req, res) {
 
 		scanner.on("result", function(data) {
 			if(data.status == "open" && data.ip != ip.address()) {
-				console.log(data);
 				devices.push(data.ip);
 			}
 		});
