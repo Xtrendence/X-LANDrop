@@ -91,6 +91,7 @@ local.post("/api", function(req, res) {
 
 		scanner.on("result", function(data) {
 			if(data.status == "open" && data.ip != ip.address()) {
+				console.log(data);
 				devices.push(data.ip);
 			}
 		});
