@@ -13,7 +13,6 @@ const appServer = app.listen(appPort);
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
-const io = require("socket.io")(localServer);
 const request = require("request");
 const ip = require("ip");
 const scan = require("evilscan");
