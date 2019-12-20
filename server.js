@@ -41,8 +41,6 @@ if(!fs.existsSync(fileDirectory)) {
 	}
 }
 
-console.log(chalk.cyan("\nFile Directory: ") + fileDirectory + "\n");
-
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, fileDirectory)
@@ -216,5 +214,9 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
+console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
+
+console.log(chalk.cyan("\nFile Directory: ") + fileDirectory + "\n");
+
 console.log(chalk.yellow("Local: ") + ip.address() + ":" + localPort);
-console.log(chalk.yellow("App: ") + ip.address() + ":" + appPort);
+console.log(chalk.yellow("App: ") + ip.address() + ":" + appPort + "\n");
