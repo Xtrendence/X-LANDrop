@@ -20,9 +20,28 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
 const multer = require("multer");
+const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
-const fileDirectory = os.homedir() + "/Downloads/";
+var fileDirectory = os.homedir() + "/Downloads/";
+
+if(!fs.existsSync(fileDirectory)) {
+	console.log("No \"Downloads\" folder found.");
+	fileDirectory = "./files/";
+	if(!fs.existsSync(fileDirectory)) {
+		console.log("No \"Files\" folder found.");
+		fs.mkdirSync(path.join(__dirname, fileDirectory), function(error) {
+			if(error) {
+				console.log(error);
+			}
+			else {
+				console.log("Created \"Files\" folder.");
+			}
+		});
+	}
+}
+
+console.log(chalk.cyan("\nFile Directory: ") + fileDirectory + "\n");
 
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
@@ -197,5 +216,5 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
-console.log("Local: " + ip.address() + ":" + localPort);
-console.log("App: " + ip.address() + ":" + appPort);
+console.log(chalk.yellow("Local: ") + ip.address() + ":" + localPort);
+console.log(chalk.yellow("App: ") + ip.address() + ":" + appPort);
