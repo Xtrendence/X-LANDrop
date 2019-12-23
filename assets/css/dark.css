@@ -12,6 +12,9 @@ body {
 	margin:0;
 	padding:0;
 	overflow:hidden;
+	width:100%;
+	height:100%;
+	position:absolute;
 }
 button, input {
 	border:none;
@@ -48,17 +51,42 @@ button, input {
 	background:rgb(210,210,210);
 }
 
-.wifi-icon {
-	width:80px;
-	height:80px;
-	padding:20px;
+.users-icon-wrapper {
+	width:120px;
+	height:120px;
 	position:absolute;
 	z-index:1;
 	bottom:160px;
 	left:calc(50% - 80px / 2 - 20px);
 	background:rgb(60,60,60);
+	transition:background 0.25s;
 	border-radius:50%;
+	cursor:pointer;
+}
+#desktop .users-icon-wrapper:hover {
+	background:rgb(20,20,20);
+}
+.users-icon-wrapper svg {
+	position:absolute;
+	width:70px;
+	height:70px;
+	left:calc(50% - 70px / 2);
+	top:calc(50% - 70px / 2 - 4px);
 	fill:rgb(255,255,255);
+}
+.users-icon-notification {
+	background:rgb(140,140,255);
+	font-size:24px;
+	display:inline-block;
+	text-align:center;
+	width:40px;
+	line-height:40px;
+	padding:6px;
+	position:absolute;
+	top:-16px;
+	right:-16px;
+	pointer-events:none;
+	border-radius:50%;
 }
 
 .user-wrapper {
@@ -89,13 +117,69 @@ button, input {
 	background:rgb(50,50,50);
 }
 
+.users-menu-wrapper {
+	z-index:30;
+	position:absolute;
+	display:none;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background:rgba(0,0,0,0.92);
+}
+.users-menu-wrapper .close-icon {
+	width:40px;
+	height:40px;
+	padding:10px;
+	border-radius:50%;
+	position:absolute;
+	z-index:31;
+	cursor:pointer;
+	top:20px;
+	right:20px;
+	fill:rgb(255,255,255);
+	background:rgb(60,60,60);
+	transition:background 0.25s;
+}
+#desktop .users-menu-wrapper .close-icon:hover {
+	background:rgb(40,40,40);
+}
+.users-menu-top {
+	position:absolute;
+	font-size:0;
+	width:420px;
+	top:20px;
+	left:calc(50% - 420px / 2);
+}
+.users-menu-button {
+	display:inline-block;
+	font-size:20px;
+	font-weight:bold;
+	background:rgb(60,60,60);
+	cursor:pointer;
+	margin:10px;
+	width:120px;
+	height:40px;
+	border-radius:10px;
+	color:rgb(255,255,255);
+}
+.users-menu-button.active {
+	background:rgb(140,140,255);
+	pointer-events:none;
+}
+#desktop .users-menu-button.active:hover {
+	background:rgb(140,140,255);
+}
+#desktop .users-menu-button:hover {
+	background:rgb(40,40,40);
+}
+
 .device-list {
 	position:absolute;
 	width:400px;
-	height:calc(100% - 380px);
+	height:350px;
 	top:40px;
 	left:calc(50% - 400px / 2 - 10px);
-	max-height:500px;
 	background:rgb(60,60,60);
 	border-radius:10px;
 	padding:10px;
@@ -116,6 +200,27 @@ button, input {
 	font-weight:bold;
 	background:none;
 }
+.loading-overlay.animated:after {
+	overflow:hidden;
+	display:inline-block;
+	vertical-align:bottom;
+	-webkit-animation:ellipsis steps(4, end) 1.5s infinite;      
+	animation:ellipsis steps(4, end) 1.5s infinite;
+	content:"\2026";
+	width:0px;
+}
+@keyframes ellipsis {
+	to {
+		width:24px;    
+	}
+}
+
+@-webkit-keyframes ellipsis {
+	to {
+		width:24px;    
+	}
+}
+
 .device {
 	position:relative;
 	display:block;
@@ -183,21 +288,17 @@ button, input {
 	position:absolute;
 	top:0;
 	left:0;
-	z-index:20;
+	z-index:666;
 	background:rgba(0,0,0,0.9);
 }
 
 .notification-area {
-	z-index:666;
+	z-index:25;
 	position:fixed;
-	left:0px;
-	bottom:0px;
-	padding:20px;
-	height:100%;
-	width:500px;
-	pointer-events:none;
+	left:0;
+	bottom:20px;
+	width:480px;
 	overflow:hidden;
-	display:block;
 }
 .notification-wrapper {
 	display:block;
@@ -205,13 +306,14 @@ button, input {
 	position:relative;
 	margin-top:20px;
 	height:auto;
+	width:100%;
 }
 .notification-bubble {
 	position:absolute;
-	z-index:667;
+	z-index:26;
 	left:-400px;
 	top:0;
-	max-width:400px;
+	max-width:calc(100% - 140px);
 	padding:10px 15px 15px 15px;
 	background:rgb(50,50,50);
 	box-shadow:0 6px 10px rgba(60,60,60,0.2);

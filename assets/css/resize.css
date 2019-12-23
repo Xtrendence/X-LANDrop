@@ -1,0 +1,34 @@
+@media screen and (max-width:500px) {
+	.device-list {
+		width:calc(100% - 80px);
+		height:330px;
+		left:30px;
+	}
+	.users-icon-wrapper {
+		bottom:210px;
+		left:calc(50% - 30px - 20px);
+		width:100px;
+		height:100px;
+	}
+	.users-icon-wrapper svg {
+		width:60px;
+		height:60px;
+		left:calc(50% - 60px / 2);
+		top:calc(50% - 60px / 2 - 4px);
+	}
+	.user-wrapper {
+		bottom:20px;
+		left:30px;
+		width:calc(100% - 60px);
+		height:auto;
+	}
+	.user-wrapper span {
+		display:block;
+		width:calc(100% - 20px);
+		margin:20px 0;
+		line-height:40px;
+	}
+	.notification-area {
+		width:100%;
+	}
+}

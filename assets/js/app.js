@@ -117,10 +117,15 @@ function empty(string) {
 
 // Notification functionality.
 function notify(title, description, color, duration) {
-	var area = document.createElement("div");
-	area.classList.add("notifiaction-area");
-	area.classList.add("noselect");
-	document.body.appendChild(area);
+	if(document.getElementsByClassName("notification-area").length == 0) {
+		var area = document.createElement("div");
+		area.classList.add("notification-area");
+		area.classList.add("noselect");
+		document.body.appendChild(area);
+	}
+	else {
+		var area = document.getElementsByClassName("notification-area")[0];
+	}
 	var notification = document.createElement("div");
 	notification.classList.add("notification-wrapper");
 	notification.innerHTML = '<div class="notification-bubble" style="background:' + color + ';"><div class="notification-title-wrapper"><span class="notification-title">' + title + '</span></div><div class="notification-description-wrapper"><span class="notification-description">' + description + '</span></div></div>';

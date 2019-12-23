@@ -23,19 +23,34 @@ const multer = require("multer");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
-var fileDirectory = os.homedir() + "/Downloads/";
+var dataFile = path.join(__dirname, "./data/data.txt");
+var downloadDirectory = os.homedir() + "/Downloads/";
 
-if(!fs.existsSync(fileDirectory)) {
-	console.log("No \"Downloads\" folder found.");
-	fileDirectory = "./files/";
-	if(!fs.existsSync(fileDirectory)) {
-		console.log("No \"Files\" folder found.");
-		fs.mkdirSync(path.join(__dirname, fileDirectory), function(error) {
+console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
+
+if(!fs.existsSync(dataFile)) {
+	console.log(chalk.red("\nNo \"Data\" file found."));
+	fs.writeFile(dataFile, "", function(error) {
+		if(error) {
+			console.log(error);
+		}
+		else {
+			console.log(chalk.green("\nCreated \"Data\" File."));
+		}
+	});
+}
+
+if(!fs.existsSync(downloadDirectory)) {
+	console.log(chalk.red("\nNo \"Downloads\" folder found."));
+	downloadDirectory = "./files/";
+	if(!fs.existsSync(downloadDirectory)) {
+		console.log(chalk.red("\nNo \"Downloads\" folder found."));
+		fs.mkdir(path.join(__dirname, downloadDirectory), function(error) {
 			if(error) {
 				console.log(error);
 			}
 			else {
-				console.log("Created \"Files\" folder.");
+				console.log(chalk.green("\nCreated \"Downloads\" folder."));
 			}
 		});
 	}
@@ -43,7 +58,7 @@ if(!fs.existsSync(fileDirectory)) {
 
 var storage = multer.diskStorage({
 	destination: function(req, file, cb) {
-		cb(null, fileDirectory)
+		cb(null, downloadDirectory)
 	},
 	filename: function(req, file, cb) {
 		var count = 1;
@@ -55,13 +70,13 @@ var storage = multer.diskStorage({
 			var nameOnly = parts.slice(0, parts.length - 1);
 
 			var name = nameOnly + "." + ext;
-			while(fs.existsSync(path.join(__dirname, fileDirectory + name))) {
+			while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
 				name = nameOnly + " (" + count + ")." + ext;
 			}
 		}
 		else {
 			var name = originalName;
-			while(fs.existsSync(path.join(__dirname, fileDirectory + name))) {
+			while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
 				name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
 			}
 		}
@@ -214,9 +229,8 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
-console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
-
-console.log(chalk.cyan("\nFile Directory: ") + fileDirectory + "\n");
+console.log(chalk.cyan("\nData File: ") + dataFile);
+console.log(chalk.cyan("\nDownload Directory: ") + downloadDirectory + "\n");
 
 console.log(chalk.yellow("Local: ") + ip.address() + ":" + localPort);
-console.log(chalk.yellow("App: ") + ip.address() + ":" + appPort + "\n");
+console.log(chalk.yellow("App: ") + ip.address() + ":" + appPort);

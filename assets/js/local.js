@@ -3,6 +3,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	var deviceList = document.getElementsByClassName("device-list")[0];
 	var userIP = document.getElementsByClassName("user-ip")[0];
 	var userPort = document.getElementsByClassName("user-port")[0];
+	
+	var divUsers = document.getElementsByClassName("users-icon-wrapper")[0];
+	var divUsersMenu = document.getElementsByClassName("users-menu-wrapper")[0];
+	var divUsersMenuBottom = document.getElementsByClassName("users-menu-bottom")[0];
+	
+	var buttonCloseUsersMenu = divUsersMenu.getElementsByClassName("close-icon")[0];
+	var buttonUsersMenu = document.getElementsByClassName("users-menu-button");
 
 	APIRequest({ action:"get-ip" });
 	APIRequest({ action:"get-devices" });
@@ -16,6 +23,30 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	else {
 		body.id = "desktop";
+	}
+	
+	divUsers.addEventListener("click", function() {
+		divUsersMenu.style.display = "block";
+		
+		for(var i = 0; i < buttonUsersMenu.length; i++) {
+			buttonUsersMenu[i].classList.remove("active");
+		}
+		
+		buttonUsersMenu[0].classList.add("active");
+	});
+	
+	buttonCloseUsersMenu.addEventListener("click", function() {
+		divUsersMenu.style.display = "none";
+	});
+	
+	for(var i = 0; i < buttonUsersMenu.length; i++) {
+		buttonUsersMenu[i].addEventListener("click", function() {
+			for(var i = 0; i < buttonUsersMenu.length; i++) {
+				buttonUsersMenu[i].classList.remove("active");
+			}
+			
+			this.classList.add("active");
+		});
 	}
 
 	function APIRequest(data) {
@@ -91,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							else if(status != "active" && document.getElementById(response.ip)) {
 								document.getElementById(response.ip).remove();
 								if(empty(deviceList.innerHTML)) {
-									deviceList.innerHTML = '<button class="loading-overlay">Scanning...</button>';
+									deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
 								}
 							}
 						}
@@ -106,6 +137,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			if(document.getElementsByClassName("page-overlay").length > 0) {
 				document.getElementsByClassName("page-overlay").remove();
 			}
+			deviceList.innerHTML = '<button class="loading-overlay">Error</button>';
 			body.innerHTML += '<button class="page-overlay">Error. API Inactive.</button>';
 		});
 		xhr.open("POST", "/api", true);
@@ -138,10 +170,15 @@ function empty(string) {
 
 // Notification functionality.
 function notify(title, description, color, duration) {
-	var area = document.createElement("div");
-	area.classList.add("notifiaction-area");
-	area.classList.add("noselect");
-	document.body.appendChild(area);
+	if(document.getElementsByClassName("notification-area").length == 0) {
+		var area = document.createElement("div");
+		area.classList.add("notification-area");
+		area.classList.add("noselect");
+		document.body.appendChild(area);
+	}
+	else {
+		var area = document.getElementsByClassName("notification-area")[0];
+	}
 	var notification = document.createElement("div");
 	notification.classList.add("notification-wrapper");
 	notification.innerHTML = '<div class="notification-bubble" style="background:' + color + ';"><div class="notification-title-wrapper"><span class="notification-title">' + title + '</span></div><div class="notification-description-wrapper"><span class="notification-description">' + description + '</span></div></div>';
