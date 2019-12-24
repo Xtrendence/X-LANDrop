@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 		else if(action == "check-device") {
 			var status = res.status;
+			var permission = res.permission;
 			if(status == "active" && res.ip != userIP.textContent) {
 				if(document.getElementsByClassName("loading-overlay").length > 0) {
 					document.getElementsByClassName("loading-overlay")[0].remove();
@@ -112,63 +113,83 @@ document.addEventListener("DOMContentLoaded", function() {
 				if(!document.getElementById(res.ip)) {
 					var hashedIP = res.hashed;
 					
-					var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
-					
-					deviceList.innerHTML += device;
-					
-					var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+					if(permission == "allow") {
+						var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
+						
+						deviceList.innerHTML += device;
+						
+						var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
 
-					document.getElementById(hashedIP).addEventListener("click", function() {
-						var input = document.createElement("input");
-						input.classList.add("hidden");
-						input.classList.add("file-input")
-						input.type = "file";
-						input.name = "files";
-						input.multiple = true;
+						document.getElementById(hashedIP).addEventListener("click", function() {
+							var input = document.createElement("input");
+							input.classList.add("hidden");
+							input.classList.add("file-input")
+							input.type = "file";
+							input.name = "files";
+							input.multiple = true;
 
-						body.appendChild(input);
+							body.appendChild(input);
 
-						input.click();
+							input.click();
 
-						input.addEventListener("change", function() {
-							var formData = new FormData();
+							input.addEventListener("change", function() {
+								var formData = new FormData();
 
-							for(var i = 0; i < input.files.length; i++) {
-								formData.append("files", input.files[i]);
-							}
+								for(var i = 0; i < input.files.length; i++) {
+									formData.append("files", input.files[i]);
+								}
 
-							var xhrUpload = new XMLHttpRequest();
+								var xhrUpload = new XMLHttpRequest();
 
-							xhrUpload.upload.addEventListener("progress", function(e) {
-								if(e.lengthComputable) {
-									var percentage = ((e.loaded / e.total) * 100).toFixed(2);
-									
-									progressBar.style.width = percentage + "%";
-									
-									if(percentage > 20) {
-										progressBar.textContent = Math.floor(percentage) + "%";
-									}
-									
-									if(percentage == 100) {
-										if(input.files.length > 1) {
-											notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
-										}
-										else {
-											notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+								xhrUpload.upload.addEventListener("progress", function(e) {
+									if(e.lengthComputable) {
+										var percentage = ((e.loaded / e.total) * 100).toFixed(2);
+										
+										progressBar.style.width = percentage + "%";
+										
+										if(percentage > 20) {
+											progressBar.textContent = Math.floor(percentage) + "%";
 										}
 										
-										setTimeout(function() {
-											progressBar.textContent = "";
-											progressBar.removeAttribute("style");
-										}, 1500);
+										if(percentage == 100) {
+											if(input.files.length > 1) {
+												notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+											}
+											else {
+												notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+											}
+											
+											setTimeout(function() {
+												progressBar.textContent = "";
+												progressBar.removeAttribute("style");
+											}, 1500);
+										}
 									}
-								}
-							});
+								});
 
-							xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
-							xhrUpload.send(formData);
+								xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
+								xhrUpload.send(formData);
+							});
 						});
-					});
+					}
+					else if(permission == "disallow") {
+						var device = '<div class="device" id="' + res.ip + '"><span class="device-ip">' + res.ip + '</span><button class="permission-button" id="' + hashedIP + '">Ask Permission</button></div>';
+						
+						deviceList.innerHTML += device;
+						
+						document.getElementById(hashedIP).addEventListener("click", function() {
+							var xhr = new XMLHttpRequest();
+							
+							xhr.addEventListener("readystatechange", function() {
+								if(xhr.readyState == XMLHttpRequest.DONE) {
+									notify("Requested", "Permission request sent.", "rgb(20,20,20)", 4000);
+								}
+							})
+							
+							xhr.open("GET", "http://" + res.ip + ":" + userPort.textContent + "/permission", true);
+							xhr.send();
+						});
+					}
 				}
 			}
 			else if(status != "active" && document.getElementById(res.ip)) {

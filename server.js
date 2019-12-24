@@ -179,7 +179,9 @@ app.on("ready", function() {
 							console.log(req.ip + " - Bad \"/status\" Body.");
 						}
 						
-						localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
+						if(data.permission != "blocked") {
+							localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
+						}
 					}
 				});
 			}
@@ -214,7 +216,7 @@ app.on("ready", function() {
 		});
 	});
 	
-	appExpress.post("/permission", function(req, res) {
+	appExpress.get("/permission", function(req, res) {
 		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
@@ -260,6 +262,10 @@ app.on("ready", function() {
 						var user = data[ip];
 						if(user.whitelisted) {
 							permission = "allow";
+						}
+						
+						if(user.blacklisted) {
+							permission = "blocked";
 						}
 					}
 					
