@@ -217,6 +217,7 @@ app.on("ready", function() {
 	});
 	
 	appExpress.get("/permission", function(req, res) {
+		res.setHeader("Access-Control-Allow-Origin", "*");
 		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
@@ -229,6 +230,9 @@ app.on("ready", function() {
 					if(!user.blacklisted && !user.whitelisted) {
 						localWindow.webContents.send("userRequest", { ip:ip, data:json });
 					}
+				}
+				else {
+					localWindow.webContents.send("userRequest", { ip:ip, data:"" });
 				}
 			}
 		});

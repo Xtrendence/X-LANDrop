@@ -113,6 +113,10 @@ document.addEventListener("DOMContentLoaded", function() {
 				if(!document.getElementById(res.ip)) {
 					var hashedIP = res.hashed;
 					
+					if(document.getElementById(hashedIP)) {
+						document.getElementById(hashedIP).remove();
+					}
+					
 					if(permission == "allow") {
 						var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 						
