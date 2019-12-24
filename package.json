@@ -24,6 +24,7 @@
     "chalk": "^3.0.0",
     "crypto": "^1.0.1",
     "ejs": "^3.0.1",
+    "electron": "^7.1.7",
     "evilscan": "^1.7.5",
     "express": "^4.17.1",
     "express-session": "^1.17.0",

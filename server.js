@@ -3,12 +3,9 @@ const localPort = 6968;
 const appPort = 6969;
 const inactiveTime = 7;
 
+const electron = require("electron");
 const express = require("express");
 const session = require("express-session");
-const local = express();
-const app = express();
-const localServer = local.listen(localPort, "localhost");
-const appServer = app.listen(appPort);
 
 const os = require("os");
 const fs = require("fs");
@@ -26,162 +23,218 @@ const bodyParser = require("body-parser");
 var dataFile = path.join(__dirname, "./data/data.txt");
 var downloadDirectory = os.homedir() + "/Downloads/";
 
+const { app, BrowserWindow, screen, ipcMain } = electron;
+
+app.requestSingleInstanceLock();
+app.setName("X:/LANDrop");
+
 console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
 
-if(!fs.existsSync(dataFile)) {
-	console.log(chalk.red("\nNo \"Data\" file found."));
-	fs.writeFile(dataFile, "", function(error) {
-		if(error) {
-			console.log(error);
-		}
-		else {
-			console.log(chalk.green("\nCreated \"Data\" File."));
-		}
-	});
-}
+app.on("ready", function() {
+	const localExpress = express();
+	const appExpress = express();
+	const localServer = localExpress.listen(localPort, "localhost");
+	const appServer = appExpress.listen(appPort);
+	
+	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+	var localWidth = 540;
+	var localHeight = height - 100;
+	
+	const localWindow = new BrowserWindow({ width:localWidth, height:localHeight, resizable:false, frame:true, webPreferences:{ nodeIntegration:true }});
+	localWindow.loadURL("file://" + path.join(__dirname, "./views/local.html") + "?localPort=" + localPort);
 
-if(!fs.existsSync(downloadDirectory)) {
-	console.log(chalk.red("\nNo \"Downloads\" folder found."));
-	downloadDirectory = "./files/";
-	if(!fs.existsSync(downloadDirectory)) {
-		console.log(chalk.red("\nNo \"Downloads\" folder found."));
-		fs.mkdir(path.join(__dirname, downloadDirectory), function(error) {
+	if(!fs.existsSync(dataFile)) {
+		console.log(chalk.red("\nNo \"Data\" file found."));
+		fs.writeFile(dataFile, "", function(error) {
 			if(error) {
 				console.log(error);
 			}
 			else {
-				console.log(chalk.green("\nCreated \"Downloads\" folder."));
+				console.log(chalk.green("\nCreated \"Data\" File."));
 			}
 		});
 	}
-}
 
-var storage = multer.diskStorage({
-	destination: function(req, file, cb) {
-		cb(null, downloadDirectory)
-	},
-	filename: function(req, file, cb) {
-		var count = 1;
-
-		var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
-		if(originalName.includes(".")) {
-			var parts = originalName.split(".");
-			var ext = parts[parts.length - 1];
-			var nameOnly = parts.slice(0, parts.length - 1);
-
-			var name = nameOnly + "." + ext;
-			while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-				name = nameOnly + " (" + count + ")." + ext;
-			}
-		}
-		else {
-			var name = originalName;
-			while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-				name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
-			}
-		}
-		
-		
-		cb(null, name)
-	}
-});
-
-const download = multer({ storage:storage });
-
-var lastActive = epoch();
-
-local.set("view engine", "ejs");
-local.use("/assets", express.static("assets"));
-local.use(bodyParser.urlencoded({ extended: true }));
-local.use(bodyParser.json());
-
-local.get("/", function(req, res) {
-	res.render("local");
-});
-
-local.post("/api", function(req, res) {
-	lastActive = epoch();
-	
-	var action = req.body.action;
-	if(action == "get-ip") {
-		res.send({ action:"get-ip", ip:ip.address(), port:appPort });
-	}
-	else if(action == "get-devices") {
-		var options = {
-			target:ip.address() + "/24",
-			port:appPort,
-			status:"TROU",
-			banner:true
-		};
-
-		var devices = [];
-
-		var scanner = new scan(options);
-
-		scanner.on("result", function(data) {
-			if(data.status == "open" && data.ip != ip.address()) {
-				devices.push(data.ip);
-			}
-		});
-
-		scanner.on("error", function(error) {
-			console.log(error);
-		});
-
-		scanner.on("done", function() {
-			res.send({ action:"get-devices", list:devices });
-		});
-
-		scanner.run();
-	}
-	else if(action == "check-device") {
-		if(req.body.ip != ip.address()) {
-			var url = "http://" + req.body.ip + ":" + appPort + "/status";
-			request({ uri:url }, function(error, response, body) {
-				var status = "inactive";
-				if(body == "active") {
-					var status = "active";
+	if(!fs.existsSync(downloadDirectory)) {
+		console.log(chalk.red("\nNo \"Downloads\" folder found."));
+		downloadDirectory = "./files/";
+		if(!fs.existsSync(downloadDirectory)) {
+			console.log(chalk.red("\nNo \"Downloads\" folder found."));
+			fs.mkdir(path.join(__dirname, downloadDirectory), function(error) {
+				if(error) {
+					console.log(error);
 				}
-				
-				res.send({ action:"check-device", ip:req.body.ip, status:status });
+				else {
+					console.log(chalk.green("\nCreated \"Downloads\" folder."));
+				}
 			});
 		}
 	}
-});
+	
+	fs.watchFile(dataFile, function(current, previous) {
+		var content = fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+			localWindow.webContents.send("userRequest", json);
+		});
+	});
 
-app.set("view engine", "ejs");
-app.use("/assets", express.static("assets"));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+	var storage = multer.diskStorage({
+		destination: function(req, file, cb) {
+			cb(null, downloadDirectory)
+		},
+		filename: function(req, file, cb) {
+			var count = 1;
 
-app.get("/", function(req, res) {
-	res.send('What are you looking for here? Did you mean to go <a href="./receive">here</a>?');
-});
+			var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
+			if(originalName.includes(".")) {
+				var parts = originalName.split(".");
+				var ext = parts[parts.length - 1];
+				var nameOnly = parts.slice(0, parts.length - 1);
 
-app.post("/receive", download.array("files", 12), function(req, res) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	var files = req.files;
-	res.send("sent");
-});
+				var name = nameOnly + "." + ext;
+				while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+					name = nameOnly + " (" + count + ")." + ext;
+				}
+			}
+			else {
+				var name = originalName;
+				while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+					name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+				}
+			}
+			
+			cb(null, name)
+		}
+	});
 
-app.get("/receive", function(req, res) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	if(epoch() - lastActive < inactiveTime) {
-		res.render("app");
-	}
-	else {
-		res.send("inactive");
-	}
-});
+	const download = multer({ storage:storage });
 
-app.get("/status", function(req, res) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	if(epoch() - lastActive < inactiveTime) {
-		res.send("active");
-	}
-	else {
-		res.send("inactive");
-	}
+	var lastActive = epoch();
+
+	localExpress.set("view engine", "ejs");
+	localExpress.use("/assets", express.static("assets"));
+	localExpress.use(bodyParser.urlencoded({ extended: true }));
+	localExpress.use(bodyParser.json());
+
+	localExpress.get("/", function(req, res) {
+		res.render("local");
+	});
+
+	ipcMain.on("APIRequest", function(error, req) {
+		lastActive = epoch();
+		
+		var action = req.action;
+		
+		if(action == "get-ip") {
+			localWindow.webContents.send("APIResponse", { action:"get-ip", ip:ip.address(), port:appPort });
+		}
+		else if(action == "get-devices") {
+			var options = {
+				target:ip.address() + "/24",
+				port:appPort,
+				status:"TROU",
+				banner:true
+			};
+
+			var devices = [];
+
+			var scanner = new scan(options);
+
+			scanner.on("result", function(data) {
+				if(data.status == "open" && data.ip != ip.address() && data.ip != "127.0.0.1") {
+					devices.push(data.ip);
+				}
+			});
+
+			scanner.on("error", function(error) {
+				console.log(error);
+			});
+
+			scanner.on("done", function() {
+				localWindow.webContents.send("APIResponse", { action:"get-devices", list:devices });
+			});
+
+			scanner.run();
+		}
+		else if(action == "check-device") {
+			if(req.ip != ip.address()) {
+				var url = "http://" + req.ip + ":" + appPort + "/status";
+				request({ uri:url }, function(error, response, body) {
+					var status = "inactive";
+					if(body == "active") {
+						var status = "active";
+					}
+					
+					localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status });
+				});
+			}
+		}
+	});
+
+	appExpress.set("view engine", "ejs");
+	appExpress.use("/assets", express.static("assets"));
+	appExpress.use(bodyParser.urlencoded({ extended: true }));
+	appExpress.use(bodyParser.json());
+
+	appExpress.get("/", function(req, res) {
+		res.send('What are you looking for here? Did you mean to go <a href="./receive">here</a>?');
+	});
+
+	appExpress.post("/receive", download.array("files", 12), function(req, res) {
+		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+			if(error) {
+				console.log(error);
+			}
+			else {
+				if(!empty(json)) {
+					var data = JSON.parse(json);
+					var user = data[req.connection.remoteAddress.replace(/^.*:/, '')];
+					if(user.whitelisted) {
+						res.setHeader("Access-Control-Allow-Origin", "*");
+						var files = req.files;
+						res.send("sent");
+					}
+				}
+			}
+		});
+	});
+	
+	appExpress.post("/permission", function(req, res) {
+		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
+		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+			if(error) {
+				console.log(error);
+			}
+			else {
+				if(!empty(json)) {
+					var data = JSON.parse(json);
+					var user = data[ip];
+					if(!user.blacklisted && !user.whitelisted) {
+						localWindow.webContents.send("userRequest", { ip:ip, data:json });
+					}
+				}
+			}
+		});
+	});
+
+	appExpress.get("/receive", function(req, res) {
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		if(epoch() - lastActive < inactiveTime) {
+			res.render("app", { ip:[req.connection.remoteAddress.replace(/^.*:/, '')] });
+		}
+		else {
+			res.send("inactive");
+		}
+	});
+
+	appExpress.get("/status", function(req, res) {
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		if(epoch() - lastActive < inactiveTime) {
+			res.send("active");
+		}
+		else {
+			res.send("inactive");
+		}
+	});
 });
 
 // Encrypt data with AES-256-CTR.

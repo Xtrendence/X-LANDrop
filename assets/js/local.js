@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
+	const electron = require("electron");
+	const { ipcRenderer } = electron;
+	
+	var localPort = getURLQuery("localPort");
+	
 	var body = document.getElementsByTagName("body")[0];
 	var deviceList = document.getElementsByClassName("device-list")[0];
 	var userIP = document.getElementsByClassName("user-ip")[0];
@@ -10,13 +15,15 @@ document.addEventListener("DOMContentLoaded", function() {
 	
 	var buttonCloseUsersMenu = divUsersMenu.getElementsByClassName("close-icon")[0];
 	var buttonUsersMenu = document.getElementsByClassName("users-menu-button");
+	
+	var spanUsersNotification = document.getElementsByClassName("users-icon-notification")[0];
 
-	APIRequest({ action:"get-ip" });
-	APIRequest({ action:"get-devices" });
+	ipcRenderer.send("APIRequest", { action:"get-ip" });
+	ipcRenderer.send("APIRequest", { action:"get-devices" });
 
 	var scanDevices = setInterval(function() {
-		APIRequest({ action:"get-devices" });
-	}, 3500);
+		ipcRenderer.send("APIRequest", { action:"get-devices" });
+	}, 3000);
 
 	if(detectMobile()) {
 		body.id = "mobile";
@@ -48,102 +55,130 @@ document.addEventListener("DOMContentLoaded", function() {
 			this.classList.add("active");
 		});
 	}
-
-	function APIRequest(data) {
-		var xhr = new XMLHttpRequest();
-		xhr.addEventListener("readystatechange", function() {
-			if(xhr.readyState == XMLHttpRequest.DONE) {
-				if(!empty(xhr.responseText)) {
-					try {
-						var response = JSON.parse(xhr.responseText);
-						var action = response.action;
-
-						if(action == "get-ip") {
-							userIP.textContent = response.ip;
-							userPort.textContent = response.port;
-							if(empty(response.ip) || empty(response.port)) {
-								setTimeout(function() {
-									APIRequest({ action:"get-ip" });
-								}, 2000);
-							}
-						}
-						else if(action == "get-devices") {
-							if(!empty(response.list)) {
-								var devices = response.list;
-								for(var i = 0; i < devices.length; i++) {
-									APIRequest({ action:"check-device", ip:devices[i] });
-								}
-							}
-						}
-						else if(action == "check-device") {
-							var status = response.status;
-							if(status == "active" && response.ip != userIP.textContent) {
-								if(document.getElementsByClassName("loading-overlay").length > 0) {
-									document.getElementsByClassName("loading-overlay")[0].remove();
-								}
-								if(!document.getElementById(response.ip)) {
-									var hashedIP = md5(response.ip);
-									var device = '<div class="device" id="' + response.ip + '"><span class="device-ip">' + response.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
-									deviceList.innerHTML += device;
-
-									document.getElementById(hashedIP).addEventListener("click", function() {
-										var input = document.createElement("input");
-										input.classList.add("hidden");
-										input.classList.add("file-input")
-										input.type = "file";
-										input.name = "files";
-										input.multiple = true;
-
-										body.appendChild(input);
-
-										input.click();
-
-										input.addEventListener("change", function() {
-											var formData = new FormData();
-
-											for(var i = 0; i < input.files.length; i++) {
-												formData.append("files", input.files[i]);
-											}
-
-											var xhrUpload = new XMLHttpRequest();
-
-											xhrUpload.addEventListener("readystatechange", function() {
-												if(xhrUpload.readyState == XMLHttpRequest.DONE) {
-
-												}
-											});
-
-											xhrUpload.open("POST", "http://" + response.ip + ":" + userPort.textContent + "/receive", true);
-											xhrUpload.send(formData);
-										});
-									});
-								}
-							}
-							else if(status != "active" && document.getElementById(response.ip)) {
-								document.getElementById(response.ip).remove();
-								if(empty(deviceList.innerHTML)) {
-									deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
-								}
-							}
-						}
-					}
-					catch(e) {
-						console.log(e);
-					}
+	
+	ipcRenderer.on("userRequest", function(error, res) {
+		var notifications = 0;
+		if(!empty(res.data)) {
+			var data = JSON.parse(res.data);
+			var ips = Object.keys(data);
+			
+			for(var i = 0; i < ips.length; i++) {
+				var ip = ips[i];
+				var user = data[ip];
+				
+				if(!user.whitelisted && !user.blacklisted) {
+					notifications += 1;
 				}
 			}
-		});
-		xhr.addEventListener("error", function(error) {
-			if(document.getElementsByClassName("page-overlay").length > 0) {
-				document.getElementsByClassName("page-overlay").remove();
+		}
+		
+		if(notifications > 0) {
+			spanUsersNotification.classList.remove("hidden");
+			spanUsersNotification.textContent = notifications;
+		}
+		else {
+			spanUsersNotification.classList.add("hidden");
+		}
+		
+		notify("Permission Required", res.ip + " would like to send you a file.", "rgb(20,20,20)", 4000);
+	});
+	
+	ipcRenderer.on("APIResponse", function(error, res) {
+		var action = res.action;
+
+		if(action == "get-ip") {
+			userIP.textContent = res.ip;
+			userPort.textContent = res.port;
+			if(empty(res.ip) || empty(res.port)) {
+				setTimeout(function() {
+					ipcRenderer.send("APIRequest", { action:"get-ip" });
+				}, 2000);
 			}
-			deviceList.innerHTML = '<button class="loading-overlay">Error</button>';
-			body.innerHTML += '<button class="page-overlay">Error. API Inactive.</button>';
-		});
-		xhr.open("POST", "/api", true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		xhr.send(JSON.stringify(data));
-	}
+		}
+		else if(action == "get-devices") {
+			if(!empty(res.list)) {
+				var devices = res.list;
+				for(var i = 0; i < devices.length; i++) {
+					ipcRenderer.send("APIRequest", { action:"check-device", ip:devices[i] });
+				}
+			}
+		}
+		else if(action == "check-device") {
+			var status = res.status;
+			if(status == "active" && res.ip != userIP.textContent) {
+				if(document.getElementsByClassName("loading-overlay").length > 0) {
+					document.getElementsByClassName("loading-overlay")[0].remove();
+				}
+				if(!document.getElementById(res.ip)) {
+					var hashedIP = md5(res.ip);
+					
+					var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
+					
+					deviceList.innerHTML += device;
+					
+					var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+
+					document.getElementById(hashedIP).addEventListener("click", function() {
+						var input = document.createElement("input");
+						input.classList.add("hidden");
+						input.classList.add("file-input")
+						input.type = "file";
+						input.name = "files";
+						input.multiple = true;
+
+						body.appendChild(input);
+
+						input.click();
+
+						input.addEventListener("change", function() {
+							var formData = new FormData();
+
+							for(var i = 0; i < input.files.length; i++) {
+								formData.append("files", input.files[i]);
+							}
+
+							var xhrUpload = new XMLHttpRequest();
+
+							xhrUpload.upload.addEventListener("progress", function(e) {
+								if(e.lengthComputable) {
+									var percentage = ((e.loaded / e.total) * 100).toFixed(2);
+									
+									progressBar.style.width = percentage + "%";
+									
+									if(percentage > 20) {
+										progressBar.textContent = Math.floor(percentage) + "%";
+									}
+									
+									if(percentage == 100) {
+										if(input.files.length > 1) {
+											notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+										}
+										else {
+											notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+										}
+										
+										setTimeout(function() {
+											progressBar.textContent = "";
+											progressBar.removeAttribute("style");
+										}, 1500);
+									}
+								}
+							});
+
+							xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
+							xhrUpload.send(formData);
+						});
+					});
+				}
+			}
+			else if(status != "active" && document.getElementById(res.ip)) {
+				document.getElementById(res.ip).remove();
+				if(empty(deviceList.innerHTML)) {
+					deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
+				}
+			}
+		}
+	});
 });
 
 // Get current UNIX timestamp.
@@ -166,6 +201,11 @@ function empty(string) {
 		return false;
 	}
 	return true;
+}
+
+// Get URL query by key.
+function getURLQuery(key) {  
+	return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));  
 }
 
 // Notification functionality.

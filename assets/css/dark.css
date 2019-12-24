@@ -7,7 +7,7 @@ html {
 	font-family:var(--font-family);
 }
 body {
-	background:rgb(40,40,40);
+	background:rgba(40,40,40);
 	color:rgb(255,255,255);
 	margin:0;
 	padding:0;
@@ -91,10 +91,10 @@ button, input {
 
 .user-wrapper {
 	height:80px;
-	width:400px;
+	width:420px;
 	position:absolute;
 	bottom:40px;
-	left:calc(50% - 400px / 2);
+	left:calc(50% - 420px / 2);
 	font-size:0;
 	text-align:center;
 }
@@ -177,7 +177,7 @@ button, input {
 .device-list {
 	position:absolute;
 	width:400px;
-	height:350px;
+	height:calc(100% - 380px);
 	top:40px;
 	left:calc(50% - 400px / 2 - 10px);
 	background:rgb(60,60,60);

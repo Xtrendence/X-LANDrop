@@ -1,11 +1,16 @@
+@media screen and (max-width:600px) {
+	.users-menu-top {
+		left:20px;
+	}
+}
+
 @media screen and (max-width:500px) {
 	.device-list {
 		width:calc(100% - 80px);
-		height:330px;
 		left:30px;
 	}
 	.users-icon-wrapper {
-		bottom:210px;
+		bottom:200px;
 		left:calc(50% - 30px - 20px);
 		width:100px;
 		height:100px;
