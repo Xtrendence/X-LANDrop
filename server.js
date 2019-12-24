@@ -229,10 +229,12 @@ app.on("ready", function() {
 					var user = data[ip];
 					if(!user.blacklisted && !user.whitelisted) {
 						localWindow.webContents.send("userRequest", { ip:ip, data:json });
+						res.send("sent");
 					}
 				}
 				else {
 					localWindow.webContents.send("userRequest", { ip:ip, data:"" });
+					res.send("sent");
 				}
 			}
 		});

@@ -186,7 +186,9 @@ document.addEventListener("DOMContentLoaded", function() {
 							
 							xhr.addEventListener("readystatechange", function() {
 								if(xhr.readyState == XMLHttpRequest.DONE) {
-									notify("Requested", "Permission request sent.", "rgb(20,20,20)", 4000);
+									if(xhr.responseText == "sent") {
+										notify("Requested", "Permission request sent.", "rgb(20,20,20)", 4000);
+									}
 								}
 							})
 							
