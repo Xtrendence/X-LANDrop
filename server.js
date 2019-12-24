@@ -230,11 +230,13 @@ app.on("ready", function() {
 					if(!user.blacklisted && !user.whitelisted) {
 						localWindow.webContents.send("userRequest", { ip:ip, data:json });
 						res.send("sent");
+						console.log(ip + " - Permission Request.");
 					}
 				}
 				else {
 					localWindow.webContents.send("userRequest", { ip:ip, data:"" });
 					res.send("sent");
+					console.log(ip + " - Permission Request.");
 				}
 			}
 		});
