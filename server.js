@@ -16,6 +16,7 @@ const scan = require("evilscan");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
+const md5 = require("md5");
 const multer = require("multer");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
@@ -159,12 +160,27 @@ app.on("ready", function() {
 			if(req.ip != ip.address()) {
 				var url = "http://" + req.ip + ":" + appPort + "/status";
 				request({ uri:url }, function(error, response, body) {
-					var status = "inactive";
-					if(body == "active") {
-						var status = "active";
+					if(!empty(body)) {
+						var status = "inactive";
+						var permission = "disallow";
+						
+						try {
+							var data = JSON.parse(body);
+							
+							if(data.status == "active") {
+								var status = "active";
+							}
+							
+							if(data.permission == "allow") {
+								var permission = "allow";
+							}
+						}
+						catch(e) {
+							console.log(req.ip + " - Bad \"/status\" Body.");
+						}
+						
+						localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
 					}
-					
-					localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status });
 				});
 			}
 		}
@@ -228,8 +244,29 @@ app.on("ready", function() {
 
 	appExpress.get("/status", function(req, res) {
 		res.setHeader("Access-Control-Allow-Origin", "*");
+		
+		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
+		
 		if(epoch() - lastActive < inactiveTime) {
-			res.send("active");
+			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+				if(error) {
+					console.log(error);
+				}
+				else {
+					var permission = "disallow";
+					
+					if(!empty(json)) {
+						var data = JSON.parse(json);
+						var user = data[ip];
+						if(user.whitelisted) {
+							permission = "allow";
+						}
+					}
+					
+					var body = { status:"active", permission:permission };
+					res.send(JSON.stringify(body));
+				}
+			});
 		}
 		else {
 			res.send("inactive");
@@ -275,6 +312,15 @@ function epoch() {
 function toEpoch(date){
 	var date = Date.parse(date);
 	return date / 1000;
+}
+
+// Check if variable content is empty.
+function empty(string) {
+	var string = string.toString();
+	if(string != "null" && typeof string != "undefined" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
+		return false;
+	}
+	return true;
 }
 
 // Replace all occurrences in a string.

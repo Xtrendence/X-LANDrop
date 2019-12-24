@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function() {
 					document.getElementsByClassName("loading-overlay")[0].remove();
 				}
 				if(!document.getElementById(res.ip)) {
-					var hashedIP = md5(res.ip);
+					var hashedIP = res.hashed;
 					
 					var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 					
