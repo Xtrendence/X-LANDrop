@@ -156,6 +156,11 @@ app.on("ready", function() {
 
 			scanner.run();
 		}
+		else if(action == "get-notifications") {
+			var content = fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+				localWindow.webContents.send("APIResponse", { action:"get-notifications", data:json });
+			});
+		}
 		else if(action == "check-device") {
 			if(req.ip != ip.address()) {
 				var url = "http://" + req.ip + ":" + appPort + "/status";
@@ -226,17 +231,46 @@ app.on("ready", function() {
 			else {
 				if(!empty(json)) {
 					var data = JSON.parse(json);
-					var user = data[ip];
-					if(!user.blacklisted && !user.whitelisted) {
-						localWindow.webContents.send("userRequest", { ip:ip, data:json });
-						res.send("sent");
-						console.log(ip + " - Permission Request.");
+					var ips = Object.keys(data);
+					
+					if(ips.includes(ip)) {
+						var user = data[ip];
+						if(!user.blacklisted && !user.whitelisted) {
+							localWindow.webContents.send("userRequest", { ip:ip, data:json });
+							res.send("sent");
+							console.log(ip + " - Permission Request.");
+						}
+					}
+					else {
+						var user = { [ip]:{ whitelisted:false, blacklisted:false }};
+						Object.assign(data, user);
+						var users = JSON.stringify(data);
+						
+						fs.writeFile(dataFile, users, function(error) {
+							if(error) {
+								console.log(error);
+							}
+							else {
+								localWindow.webContents.send("userRequest", { ip:ip, data:users });
+								res.send("sent");
+								console.log(ip + " - Permission Request.");
+							}
+						});
 					}
 				}
 				else {
-					localWindow.webContents.send("userRequest", { ip:ip, data:"" });
-					res.send("sent");
-					console.log(ip + " - Permission Request.");
+					var user = JSON.stringify({ [ip]:{ whitelisted:false, blacklisted:false }});
+					
+					fs.writeFile(dataFile, user, function(error) {
+						if(error) {
+							console.log(error);
+						}
+						else {
+							localWindow.webContents.send("userRequest", { ip:ip, data:user });
+							res.send("sent");
+							console.log(ip + " - Permission Request.");
+						}
+					});
 				}
 			}
 		});

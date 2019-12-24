@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	ipcRenderer.send("APIRequest", { action:"get-ip" });
 	ipcRenderer.send("APIRequest", { action:"get-devices" });
+	ipcRenderer.send("APIRequest", { action:"get-notifications" });
 
 	var scanDevices = setInterval(function() {
 		ipcRenderer.send("APIRequest", { action:"get-devices" });
@@ -101,6 +102,30 @@ document.addEventListener("DOMContentLoaded", function() {
 				for(var i = 0; i < devices.length; i++) {
 					ipcRenderer.send("APIRequest", { action:"check-device", ip:devices[i] });
 				}
+			}
+		}
+		else if(action == "get-notifications") {
+			var notifications = 0;
+			if(!empty(res.data)) {
+				var data = JSON.parse(res.data);
+				var ips = Object.keys(data);
+				
+				for(var i = 0; i < ips.length; i++) {
+					var ip = ips[i];
+					var user = data[ip];
+					
+					if(!user.whitelisted && !user.blacklisted) {
+						notifications += 1;
+					}
+				}
+			}
+			
+			if(notifications > 0) {
+				spanUsersNotification.classList.remove("hidden");
+				spanUsersNotification.textContent = notifications;
+			}
+			else {
+				spanUsersNotification.classList.add("hidden");
 			}
 		}
 		else if(action == "check-device") {
