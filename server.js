@@ -173,26 +173,26 @@ app.on("ready", function() {
 						var data = JSON.parse(json);
 						
 						if(performAction == "block") {
-							data[req.ip].whitelisted = false;
-							data[req.ip].blacklisted = true;
+							data[req.ip]["whitelisted"] = false;
+							data[req.ip]["blacklisted"] = true;
 						}
 						else if(performAction == "unblock") {
-							data[req.ip].whitelisted = false;
-							data[req.ip].blacklisted = false;
+							data[req.ip]["whitelisted"] = false;
+							data[req.ip]["blacklisted"] = false;
 						}
 						else if(performAction == "decline") {
 							delete data[req.ip];
 						}
 						else if(performAction == "accept") {
-							data[req.ip].whitelisted = true;
-							data[req.ip].blacklisted = false;
+							data[req.ip]["whitelisted"] = true;
+							data[req.ip]["blacklisted"] = false;
 						}
 						
 						if(Object.keys(data).length == 0) {
 							data = "";
 						}
 						
-						fs.writeFile(dataFile, data, function(error) {
+						fs.writeFile(dataFile, JSON.stringify(data), function(error) {
 							if(error) {
 								console.log(error);
 							}
@@ -222,13 +222,12 @@ app.on("ready", function() {
 							if(data.permission == "allow") {
 								var permission = "allow";
 							}
+							if(data.permission != "blocked") {
+								localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
+							}
 						}
 						catch(e) {
 							console.log(req.ip + " - Bad \"/status\" Body.");
-						}
-						
-						if(data.permission != "blocked") {
-							localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
 						}
 					}
 				});
