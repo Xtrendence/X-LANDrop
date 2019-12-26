@@ -80,30 +80,49 @@ app.on("ready", function() {
 
 	var storage = multer.diskStorage({
 		destination: function(req, file, cb) {
-			cb(null, downloadDirectory)
+			cb(null, downloadDirectory);
 		},
 		filename: function(req, file, cb) {
-			var count = 1;
-
-			var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
-			if(originalName.includes(".")) {
-				var parts = originalName.split(".");
-				var ext = parts[parts.length - 1];
-				var nameOnly = parts.slice(0, parts.length - 1);
-
-				var name = nameOnly + "." + ext;
-				while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-					name = nameOnly + " (" + count + ")." + ext;
+			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+				if(error) {
+					console.log(error);
 				}
-			}
-			else {
-				var name = originalName;
-				while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-					name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+				else {
+					if(!empty(json)) {
+						var data = JSON.parse(json);
+						var user = data[req.connection.remoteAddress.replace(/^.*:/, '')];
+						if(user.whitelisted) {
+							var count = 1;
+
+							var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
+							if(originalName.includes(".")) {
+								var parts = originalName.split(".");
+								var ext = parts[parts.length - 1];
+								var nameOnly = parts.slice(0, parts.length - 1);
+
+								var name = nameOnly + "." + ext;
+								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+									name = nameOnly + " (" + count + ")." + ext;
+								}
+							}
+							else {
+								var name = originalName;
+								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+									name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+								}
+							}
+							
+							cb(null, name);
+						}
+						else {
+							cb(new Error("You don't have permission to send files to this user."));
+						}
+					}
+					else {
+						cb(new Error("You don't have permission to send files to this user."));
+					}
 				}
-			}
-			
-			cb(null, name)
+			});
 		}
 	});
 
@@ -246,7 +265,7 @@ app.on("ready", function() {
 	appExpress.use(bodyParser.json());
 
 	appExpress.get("/", function(req, res) {
-		res.send('What are you looking for here? Did you mean to go <a href="./receive">here</a>?');
+		res.redirect("/receive");
 	});
 
 	appExpress.post("/receive", download.array("files", 12), function(req, res) {
