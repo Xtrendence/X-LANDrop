@@ -268,7 +268,7 @@ app.on("ready", function() {
 	
 	appExpress.get("/permission", function(req, res) {
 		res.setHeader("Access-Control-Allow-Origin", "*");
-		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
+		var ipAddress = req.connection.remoteAddress.replace(/^.*:/, '');
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
 				console.log(error);
@@ -278,16 +278,16 @@ app.on("ready", function() {
 					var data = JSON.parse(json);
 					var ips = Object.keys(data);
 					
-					if(ips.includes(ip)) {
-						var user = data[ip];
+					if(ips.includes(ipAddress)) {
+						var user = data[ipAddress];
 						if(!user.blacklisted && !user.whitelisted) {
-							localWindow.webContents.send("userRequest", { ip:ip, data:json });
+							localWindow.webContents.send("userRequest", { ip:ipAddress, data:json });
 							res.send("sent");
 							console.log(ip + " - Permission Request.");
 						}
 					}
 					else {
-						var user = { [ip]:{ whitelisted:false, blacklisted:false }};
+						var user = { [ipAddress]:{ whitelisted:false, blacklisted:false }};
 						Object.assign(data, user);
 						var users = JSON.stringify(data);
 						
@@ -296,7 +296,7 @@ app.on("ready", function() {
 								console.log(error);
 							}
 							else {
-								localWindow.webContents.send("userRequest", { ip:ip, data:users });
+								localWindow.webContents.send("userRequest", { ip:ipAddress, data:users });
 								res.send("sent");
 								console.log(ip + " - Permission Request.");
 							}
@@ -304,16 +304,16 @@ app.on("ready", function() {
 					}
 				}
 				else {
-					var user = JSON.stringify({ [ip]:{ whitelisted:false, blacklisted:false }});
+					var user = JSON.stringify({ [ipAddress]:{ whitelisted:false, blacklisted:false }});
 					
 					fs.writeFile(dataFile, user, function(error) {
 						if(error) {
 							console.log(error);
 						}
 						else {
-							localWindow.webContents.send("userRequest", { ip:ip, data:user });
+							localWindow.webContents.send("userRequest", { ip:ipAddress, data:user });
 							res.send("sent");
-							console.log(ip + " - Permission Request.");
+							console.log(ipAddress + " - Permission Request.");
 						}
 					});
 				}
@@ -334,7 +334,7 @@ app.on("ready", function() {
 	appExpress.get("/status", function(req, res) {
 		res.setHeader("Access-Control-Allow-Origin", "*");
 		
-		var ip = req.connection.remoteAddress.replace(/^.*:/, '');
+		var ipAddress = req.connection.remoteAddress.replace(/^.*:/, '');
 		
 		if(epoch() - lastActive < inactiveTime) {
 			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
@@ -346,7 +346,7 @@ app.on("ready", function() {
 					
 					if(!empty(json)) {
 						var data = JSON.parse(json);
-						var user = data[ip];
+						var user = data[ipAddress];
 						if(user.whitelisted) {
 							permission = "allow";
 						}

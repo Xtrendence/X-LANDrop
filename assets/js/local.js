@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 					
 					if(permission == "allow") {
-						var device = '<div class="device" id="' + res.ip + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
+						var device = '<div class="device" id="' + res.ip + '" data-permission="' + res.permission + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 						
 						deviceList.innerHTML += device;
 						
@@ -197,6 +197,12 @@ document.addEventListener("DOMContentLoaded", function() {
 					deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
 				}
 			}
+			else if(status == "active" && document.getElementById(res.ip).getAttribute("data-permission") != res.permission) {
+				document.getElementById(res.ip).remove();
+				ipcRenderer.send("APIRequest", { action:"get-devices" });
+			}
+			console.log(document.getElementById(res.ip).getAttribute("data-permission"));
+			console.log(res.permission);
 		}
 	});
 
