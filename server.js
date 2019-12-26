@@ -219,15 +219,17 @@ app.on("ready", function() {
 							var data = JSON.parse(body);
 							
 							if(data.status == "active") {
-								var status = "active";
+								status = "active";
 							}
 							
 							if(data.permission == "allow") {
-								var permission = "allow";
+								permission = "allow";
 							}
-							if(data.permission != "blocked") {
-								localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
+							else if(data.permission == "blocked") {
+								permission = "blocked";
 							}
+							
+							localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
 						}
 						catch(e) {
 							console.log(req.ip + " - Bad \"/status\" Body.");
@@ -347,6 +349,7 @@ app.on("ready", function() {
 					if(!empty(json)) {
 						var data = JSON.parse(json);
 						var user = data[ipAddress];
+						
 						if(user.whitelisted) {
 							permission = "allow";
 						}

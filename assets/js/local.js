@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						
 						deviceList.innerHTML += device;
 						
-						var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+						var progressBar = document.getElementById(res.ip).getElementsByClassName("progress")[0];
 
 						document.getElementById(hashedIP).addEventListener("click", function() {
 							var input = document.createElement("input");
@@ -201,8 +201,6 @@ document.addEventListener("DOMContentLoaded", function() {
 				document.getElementById(res.ip).remove();
 				ipcRenderer.send("APIRequest", { action:"get-devices" });
 			}
-			console.log(document.getElementById(res.ip).getAttribute("data-permission"));
-			console.log(res.permission);
 		}
 	});
 
