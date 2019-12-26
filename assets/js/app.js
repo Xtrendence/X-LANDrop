@@ -52,7 +52,15 @@ document.addEventListener("DOMContentLoaded", function() {
 			xhrUpload.addEventListener("readystatechange", function() {
 				if(xhrUpload.readyState == XMLHttpRequest.DONE) {
 					if(xhrUpload.responseText == "sent") {
-						input.remove();
+						if(input.files.length > 1) {
+							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						else {
+							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+					}
+					else {
+						notify("Error", "Something went wrong...");
 					}
 				}
 			});
@@ -68,23 +76,17 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 					
 					if(percentage == 100) {
-						if(input.files.length > 1) {
-							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
-						}
-						else {
-							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
-						}
-						
 						setTimeout(function() {
 							progressBar.textContent = "";
 							progressBar.removeAttribute("style");
+							input.remove();
 						}, 1500);
 					}
 				}
 			});
 
 			xhrUpload.addEventListener("error", function(error) {
-				notify("Error", "Couldn't upload file.", "rgb(20,20,20)", 4000);
+				notify("Error", "Couldn't upload file(s).", "rgb(20,20,20)", 4000);
 			});
 
 			xhrUpload.open("POST", url, true);

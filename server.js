@@ -91,29 +91,36 @@ app.on("ready", function() {
 				else {
 					if(!empty(json)) {
 						var data = JSON.parse(json);
-						var user = data[req.connection.remoteAddress.replace(/^.*:/, '')];
-						if(user.whitelisted) {
-							var count = 1;
+						var userIP = req.connection.remoteAddress.replace(/^.*:/, '');
+						var user = data[userIP];
+						
+						if(Object.keys(data).includes(userIP)) {
+							if(user.whitelisted) {
+								var count = 1;
 
-							var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
-							if(originalName.includes(".")) {
-								var parts = originalName.split(".");
-								var ext = parts[parts.length - 1];
-								var nameOnly = parts.slice(0, parts.length - 1);
+								var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
+								if(originalName.includes(".")) {
+									var parts = originalName.split(".");
+									var ext = parts[parts.length - 1];
+									var nameOnly = parts.slice(0, parts.length - 1);
 
-								var name = nameOnly + "." + ext;
-								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-									name = nameOnly + " (" + count + ")." + ext;
+									var name = nameOnly + "." + ext;
+									while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+										name = nameOnly + " (" + count + ")." + ext;
+									}
 								}
+								else {
+									var name = originalName;
+									while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+										name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+									}
+								}
+								
+								cb(null, name);
 							}
 							else {
-								var name = originalName;
-								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-									name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
-								}
+								cb(new Error("You don't have permission to send files to this user."));
 							}
-							
-							cb(null, name);
 						}
 						else {
 							cb(new Error("You don't have permission to send files to this user."));
@@ -277,11 +284,15 @@ app.on("ready", function() {
 			else {
 				if(!empty(json)) {
 					var data = JSON.parse(json);
-					var user = data[req.connection.remoteAddress.replace(/^.*:/, '')];
-					if(user.whitelisted) {
-						res.setHeader("Access-Control-Allow-Origin", "*");
-						var files = req.files;
-						res.send("sent");
+					var userIP = req.connection.remoteAddress.replace(/^.*:/, '');
+					var user = data[userIP];
+					
+					if(Object.keys(data).includes(userIP)) {
+						if(user.whitelisted) {
+							res.setHeader("Access-Control-Allow-Origin", "*");
+							var files = req.files;
+							res.send("sent");
+						}
 					}
 				}
 			}
@@ -370,12 +381,14 @@ app.on("ready", function() {
 						var data = JSON.parse(json);
 						var user = data[ipAddress];
 						
-						if(user.whitelisted) {
-							permission = "allow";
-						}
-						
-						if(user.blacklisted) {
-							permission = "blocked";
+						if(Object.keys(data).includes(ipAddress)) {
+							if(user.whitelisted) {
+								permission = "allow";
+							}
+							
+							if(user.blacklisted) {
+								permission = "blocked";
+							}
 						}
 					}
 					
