@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		else if(action == "check-device") {
 			var status = res.status;
 			var permission = res.permission;
-			if(status == "active" && res.ip != userIP.textContent) {
+			if(status == "active" && permission != "blocked" && res.ip != userIP.textContent) {
 				if(document.getElementsByClassName("loading-overlay").length > 0) {
 					document.getElementsByClassName("loading-overlay")[0].remove();
 				}
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 					
 					if(permission == "allow") {
-						var device = '<div class="device" id="' + res.ip + '" data-permission="' + res.permission + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
+						var device = '<div class="device" id="' + res.ip + '" data-permission="' + permission + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 						
 						deviceList.innerHTML += device;
 						
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						});
 					}
 					else if(permission == "disallow") {
-						var device = '<div class="device" id="' + res.ip + '" data-permission="' + res.permission + '"><span class="device-ip">' + res.ip + '</span><button class="permission-button" id="' + hashedIP + '">Ask Permission</button></div>';
+						var device = '<div class="device" id="' + res.ip + '" data-permission="' + permission + '"><span class="device-ip">' + res.ip + '</span><button class="permission-button" id="' + hashedIP + '">Ask Permission</button></div>';
 						
 						deviceList.innerHTML += device;
 						
@@ -190,8 +190,11 @@ document.addEventListener("DOMContentLoaded", function() {
 						});
 					}
 				}
-				else if(document.getElementById(res.ip).getAttribute("data-permission") != res.permission) {
+				else if(document.getElementById(res.ip).getAttribute("data-permission") != permission) {
 					document.getElementById(res.ip).remove();
+					if(empty(deviceList.innerHTML)) {
+						deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
+					}
 					ipcRenderer.send("APIRequest", { action:"get-devices" });
 				}
 			}
