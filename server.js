@@ -1,8 +1,8 @@
 // Changeable Variables
-const localPort = 6968;
-const appPort = 6969;
-const inactiveTime = 7;
-const uploadLimit = 100;
+const localPort = 6968; // Port used for the local portion of application. Only the server should be able to access this.
+const appPort = 6969; // Port used to allow other devices to connect to the server.
+const inactiveTime = 7; // If the app or tab is closed for this many seconds, the device's status is set to inactive and other devices won't list it.
+const uploadLimit = 100; // Number of files that can be uploaded at a time.
 
 const electron = require("electron");
 const express = require("express");
