@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			processNotifications(res.data);
 		}
 		else if(action == "check-device") {
+			console.log(res);
 			var status = res.status;
 			var permission = res.permission;
 			if(status == "active" && res.ip != userIP.textContent) {
@@ -190,16 +191,16 @@ document.addEventListener("DOMContentLoaded", function() {
 						});
 					}
 				}
+				else if(document.getElementById(res.ip).getAttribute("data-permission") != res.permission) {
+					document.getElementById(res.ip).remove();
+					ipcRenderer.send("APIRequest", { action:"get-devices" });
+				}
 			}
 			else if(status != "active" && document.getElementById(res.ip)) {
 				document.getElementById(res.ip).remove();
 				if(empty(deviceList.innerHTML)) {
 					deviceList.innerHTML = '<button class="loading-overlay animated">Scanning</button>';
 				}
-			}
-			else if(status == "active" && document.getElementById(res.ip).getAttribute("data-permission") != res.permission) {
-				document.getElementById(res.ip).remove();
-				ipcRenderer.send("APIRequest", { action:"get-devices" });
 			}
 		}
 	});
