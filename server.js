@@ -2,6 +2,7 @@
 const localPort = 6968;
 const appPort = 6969;
 const inactiveTime = 7;
+const uploadLimit = 100;
 
 const electron = require("electron");
 const express = require("express");
@@ -268,7 +269,7 @@ app.on("ready", function() {
 		res.redirect("/receive");
 	});
 
-	appExpress.post("/receive", download.array("files", 12), function(req, res) {
+	appExpress.post("/receive", download.array("files", uploadLimit), function(req, res) {
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
 				console.log(error);
