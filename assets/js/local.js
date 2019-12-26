@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", function() {
 			processNotifications(res.data);
 		}
 		else if(action == "check-device") {
-			console.log(res);
 			var status = res.status;
 			var permission = res.permission;
 			if(status == "active" && res.ip != userIP.textContent) {
