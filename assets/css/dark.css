@@ -173,6 +173,63 @@ button, input {
 #desktop .users-menu-button:hover {
 	background:rgb(40,40,40);
 }
+.users-menu-list {
+	position:absolute;
+	background:rgb(60,60,60);
+	top:100px;
+	left:40px;
+	width:calc(100% - 80px);
+	height:calc(100% - 100px - 40px);
+	overflow-x:hidden;
+	overflow-y:scroll;
+	-webkit-overflow-scrolling:touch;
+	scroll-behavior:smooth;
+	border-radius:10px;
+}
+.users-menu-list::-webkit-scrollbar {
+	display:none;
+}
+.users-menu-item {
+	display:block;
+	height:50px;
+	width:calc(100% - 40px);
+	margin:20px auto 20px auto;
+	background:rgb(40,40,40);
+	border-radius:10px;
+	font-size:0;
+	position:relative;
+	overflow:hidden;
+}
+.users-menu-item span {
+	font-size:18px;
+	padding:0 10px 0 10px;
+	display:inline-block;
+	color:rgb(255,255,255);
+	line-height:50px;
+}
+.users-menu-item div {
+	height:40px;
+	position:absolute;
+	right:5px;
+	top:5px;
+}
+.users-menu-item button {
+	background:rgb(60,60,60);
+	font-weight:bold;
+	color:rgb(255,255,255);
+	font-size:16px;
+	display:inline-block;
+	border-radius:10px;
+	width:auto;
+	height:40px;
+	padding:0 10px 0 10px;
+	margin:0 0 0 5px;
+	vertical-align:top;
+	cursor:pointer;
+}
+#desktop .users-menu-item button:hover {
+	background:rgb(20,20,20);
+}
 
 .device-list {
 	position:absolute;

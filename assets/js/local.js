@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	var divUsers = document.getElementsByClassName("users-icon-wrapper")[0];
 	var divUsersMenu = document.getElementsByClassName("users-menu-wrapper")[0];
 	var divUsersMenuBottom = document.getElementsByClassName("users-menu-bottom")[0];
+	var divUsersListRequests = document.getElementsByClassName("users-menu-list requests")[0];
+	var divUsersListWhitelist = document.getElementsByClassName("users-menu-list whitelist")[0];
+	var divUsersListBlacklist = document.getElementsByClassName("users-menu-list blacklist")[0];
 	
 	var buttonCloseUsersMenu = divUsersMenu.getElementsByClassName("close-icon")[0];
 	var buttonUsersMenu = document.getElementsByClassName("users-menu-button");
@@ -34,13 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	
 	divUsers.addEventListener("click", function() {
-		divUsersMenu.style.display = "block";
-		
-		for(var i = 0; i < buttonUsersMenu.length; i++) {
-			buttonUsersMenu[i].classList.remove("active");
-		}
-		
-		buttonUsersMenu[0].classList.add("active");
+		showUsersMenu();
 	});
 	
 	buttonCloseUsersMenu.addEventListener("click", function() {
@@ -54,34 +51,26 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 			
 			this.classList.add("active");
+			
+			divUsersListRequests.style.display = "none";
+			divUsersListWhitelist.style.display = "none";
+			divUsersListBlacklist.style.display = "none";
+			
+			if(this.classList.contains("requests")) {
+				divUsersListRequests.style.display = "block";
+			}
+			else if(this.classList.contains("whitelist")) {
+				divUsersListWhitelist.style.display = "block";
+			}
+			else if(this.classList.contains("blacklist")) {
+				divUsersListBlacklist.style.display = "block";
+			}
 		});
 	}
 	
 	ipcRenderer.on("userRequest", function(error, res) {
-		var notifications = 0;
-		if(!empty(res.data)) {
-			var data = JSON.parse(res.data);
-			var ips = Object.keys(data);
-			
-			for(var i = 0; i < ips.length; i++) {
-				var ip = ips[i];
-				var user = data[ip];
-				
-				if(!user.whitelisted && !user.blacklisted) {
-					notifications += 1;
-				}
-			}
-		}
-		
-		if(notifications > 0) {
-			spanUsersNotification.classList.remove("hidden");
-			spanUsersNotification.textContent = notifications;
-		}
-		else {
-			spanUsersNotification.classList.add("hidden");
-		}
-		
-		notify("Permission Required", res.ip + " would like to send you a file.", "rgb(20,20,20)", 4000);
+		processNotifications(res.data);
+		notify("Permission Required", res.ip + " would like to send you a file.", "rgb(20,20,20)", 4000, true);
 	});
 	
 	ipcRenderer.on("APIResponse", function(error, res) {
@@ -105,28 +94,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		}
 		else if(action == "get-notifications") {
-			var notifications = 0;
-			if(!empty(res.data)) {
-				var data = JSON.parse(res.data);
-				var ips = Object.keys(data);
-				
-				for(var i = 0; i < ips.length; i++) {
-					var ip = ips[i];
-					var user = data[ip];
-					
-					if(!user.whitelisted && !user.blacklisted) {
-						notifications += 1;
-					}
-				}
-			}
-			
-			if(notifications > 0) {
-				spanUsersNotification.classList.remove("hidden");
-				spanUsersNotification.textContent = notifications;
-			}
-			else {
-				spanUsersNotification.classList.add("hidden");
-			}
+			processNotifications(res.data);
 		}
 		else if(action == "check-device") {
 			var status = res.status;
@@ -182,10 +150,10 @@ document.addEventListener("DOMContentLoaded", function() {
 										
 										if(percentage == 100) {
 											if(input.files.length > 1) {
-												notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+												notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000, false);
 											}
 											else {
-												notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+												notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000, false);
 											}
 											
 											setTimeout(function() {
@@ -212,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							xhr.addEventListener("readystatechange", function() {
 								if(xhr.readyState == XMLHttpRequest.DONE) {
 									if(xhr.responseText == "sent") {
-										notify("Requested", "Permission request sent.", "rgb(20,20,20)", 4000);
+										notify("Requested", "Permission request sent.", "rgb(20,20,20)", 4000, false);
 									}
 								}
 							})
@@ -231,6 +199,146 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		}
 	});
+
+	function showUsersMenu() {
+		divUsersMenu.style.display = "block";
+		
+		for(var i = 0; i < buttonUsersMenu.length; i++) {
+			buttonUsersMenu[i].classList.remove("active");
+		}
+		
+		buttonUsersMenu[0].classList.add("active");
+		
+		divUsersListRequests.style.display = "block";
+		divUsersListWhitelist.style.display = "none";
+		divUsersListBlacklist.style.display = "none";
+	}
+	
+	function performUserAction(ip, perform) {
+		ipcRenderer.send("APIRequest", { action:"user-action", ip:ip, perform:perform });
+	}
+	
+	function processNotifications(json) {
+		var requests = [];
+		var whitelist = [];
+		var blacklist = [];
+		
+		var notifications = 0;
+		
+		if(!empty(json)) {
+			var data = JSON.parse(json);
+			var ips = Object.keys(data);
+			
+			for(var i = 0; i < ips.length; i++) {
+				var ip = ips[i];
+				var user = data[ip];
+				
+				if(!user.whitelisted && !user.blacklisted) {
+					notifications += 1;
+					requests.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>');
+				}
+				else if(user.whitelisted) {
+					whitelist.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>');
+				}
+				else if(user.blacklisted) {
+					blacklist.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>');
+				}
+			}
+		}
+		
+		if(notifications > 0) {
+			spanUsersNotification.classList.remove("hidden");
+			spanUsersNotification.textContent = notifications;
+		}
+		else {
+			spanUsersNotification.classList.add("hidden");
+		}
+		
+		divUsersListRequests.innerHTML = "";
+		divUsersListWhitelist.innerHTML = "";
+		divUsersListBlacklist.innerHTML = "";
+		
+		for(var i = 0; i < requests.length; i++) {
+			divUsersListRequests.innerHTML += requests[i];
+			
+			var item = divUsersListRequests.getElementsByClassName("users-menu-item")[i];
+			var buttons = item.getElementsByTagName("button");
+			
+			for(var j = 0; j < buttons.length; j++) {
+				buttons[j].addEventListener("click", function() {
+					var ip = this.parentNode.parentNode.getAttribute("data-ip");
+					var action = this.getAttribute("data-action");
+					performUserAction(ip, action);
+				});
+			}
+		}
+		for(var i = 0; i < whitelist.length; i++) {
+			divUsersListWhitelist.innerHTML += whitelist[i];
+			
+			var item = divUsersListWhitelist.getElementsByClassName("users-menu-item")[i];
+			var buttons = item.getElementsByTagName("button");
+			
+			for(var j = 0; j < buttons.length; j++) {
+				buttons[j].addEventListener("click", function() {
+					var ip = this.parentNode.parentNode.getAttribute("data-ip");
+					var action = this.getAttribute("data-action");
+					performUserAction(ip, action);
+				});
+			}
+		}
+		for(var i = 0; i < blacklist.length; i++) {
+			divUsersListBlacklist.innerHTML += blacklist[i];
+			
+			var item = divUsersListBlacklist.getElementsByClassName("users-menu-item")[i];
+			var buttons = item.getElementsByTagName("button");
+			
+			for(var j = 0; j < buttons.length; j++) {
+				buttons[j].addEventListener("click", function() {
+					var ip = this.parentNode.parentNode.getAttribute("data-ip");
+					var action = this.getAttribute("data-action");
+					performUserAction(ip, action);
+				});
+			}
+		}
+	}
+	
+	// Notification functionality.
+	function notify(title, description, color, duration, permission) {
+		if(document.getElementsByClassName("notification-area").length == 0) {
+			var area = document.createElement("div");
+			area.classList.add("notification-area");
+			area.classList.add("noselect");
+			document.body.appendChild(area);
+		}
+		else {
+			var area = document.getElementsByClassName("notification-area")[0];
+		}
+		var notification = document.createElement("div");
+		notification.classList.add("notification-wrapper");
+		notification.innerHTML = '<div class="notification-bubble" style="background:' + color + ';"><div class="notification-title-wrapper"><span class="notification-title">' + title + '</span></div><div class="notification-description-wrapper"><span class="notification-description">' + description + '</span></div></div>';
+		area.appendChild(notification);
+		
+		if(permission) {
+			var bubble = notification.getElementsByClassName("notification-bubble")[0];
+			bubble.style.cursor = "pointer";
+			bubble.addEventListener("click", function() {
+				showUsersMenu();
+			});
+		}
+		
+		notification.style.height = notification.scrollHeight + "px";
+		notification.style.visibility = "visible";
+		notification.getElementsByClassName("notification-bubble")[0].style.left = "20px";
+		setTimeout(function() {
+			notification.getElementsByClassName("notification-bubble")[0].style.left = "-600px";
+			setTimeout(function() {
+				notification.remove();
+				if(area.innerHTML == "") {
+					area.remove();
+				}
+			}, 500);
+		}, duration);
+	}
 });
 
 // Get current UNIX timestamp.
@@ -258,35 +366,6 @@ function empty(string) {
 // Get URL query by key.
 function getURLQuery(key) {  
 	return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));  
-}
-
-// Notification functionality.
-function notify(title, description, color, duration) {
-	if(document.getElementsByClassName("notification-area").length == 0) {
-		var area = document.createElement("div");
-		area.classList.add("notification-area");
-		area.classList.add("noselect");
-		document.body.appendChild(area);
-	}
-	else {
-		var area = document.getElementsByClassName("notification-area")[0];
-	}
-	var notification = document.createElement("div");
-	notification.classList.add("notification-wrapper");
-	notification.innerHTML = '<div class="notification-bubble" style="background:' + color + ';"><div class="notification-title-wrapper"><span class="notification-title">' + title + '</span></div><div class="notification-description-wrapper"><span class="notification-description">' + description + '</span></div></div>';
-	area.appendChild(notification);
-	notification.style.height = notification.scrollHeight + "px";
-	notification.style.visibility = "visible";
-	notification.getElementsByClassName("notification-bubble")[0].style.left = "20px";
-	setTimeout(function() {
-		notification.getElementsByClassName("notification-bubble")[0].style.left = "-600px";
-		setTimeout(function() {
-			notification.remove();
-			if(area.innerHTML == "") {
-				area.remove();
-			}
-		}, 500);
-	}, duration);
 }
 
 // Detect whether or not the user is on a mobile browser.

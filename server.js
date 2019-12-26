@@ -161,6 +161,49 @@ app.on("ready", function() {
 				localWindow.webContents.send("APIResponse", { action:"get-notifications", data:json });
 			});
 		}
+		else if(action == "user-action") {
+			var performAction = req.perform;
+			
+			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+				if(error) {
+					console.log(error);
+				}
+				else {
+					if(!empty(json)) {
+						var data = JSON.parse(json);
+						
+						if(performAction == "block") {
+							data[req.ip].whitelisted = false;
+							data[req.ip].blacklisted = true;
+						}
+						else if(performAction == "unblock") {
+							data[req.ip].whitelisted = false;
+							data[req.ip].blacklisted = false;
+						}
+						else if(performAction == "decline") {
+							delete data[req.ip];
+						}
+						else if(performAction == "accept") {
+							data[req.ip].whitelisted = true;
+							data[req.ip].blacklisted = false;
+						}
+						
+						if(Object.keys(data).length == 0) {
+							data = "";
+						}
+						
+						fs.writeFile(dataFile, data, function(error) {
+							if(error) {
+								console.log(error);
+							}
+							else {
+								localWindow.webContents.send("APIResponse", { action:"get-notifications", data:JSON.stringify(data) });
+							}
+						});
+					}
+				}
+			});
+		}
 		else if(action == "check-device") {
 			if(req.ip != ip.address()) {
 				var url = "http://" + req.ip + ":" + appPort + "/status";
@@ -364,8 +407,11 @@ function toEpoch(date){
 
 // Check if variable content is empty.
 function empty(string) {
+	if(typeof string == "undefined") {
+		return false;
+	}
 	var string = string.toString();
-	if(string != "null" && typeof string != "undefined" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
+	if(string != "null" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
 		return false;
 	}
 	return true;
