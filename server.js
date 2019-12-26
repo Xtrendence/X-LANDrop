@@ -191,13 +191,16 @@ app.on("ready", function() {
 						if(Object.keys(data).length == 0) {
 							data = "";
 						}
+						else {
+							data = JSON.stringify(data);
+						}
 						
-						fs.writeFile(dataFile, JSON.stringify(data), function(error) {
+						fs.writeFile(dataFile, data, function(error) {
 							if(error) {
 								console.log(error);
 							}
 							else {
-								localWindow.webContents.send("APIResponse", { action:"get-notifications", data:JSON.stringify(data) });
+								localWindow.webContents.send("APIResponse", { action:"get-notifications", data:data });
 							}
 						});
 					}
