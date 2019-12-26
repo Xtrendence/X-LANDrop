@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						});
 					}
 					else if(permission == "disallow") {
-						var device = '<div class="device" id="' + res.ip + '"><span class="device-ip">' + res.ip + '</span><button class="permission-button" id="' + hashedIP + '">Ask Permission</button></div>';
+						var device = '<div class="device" id="' + res.ip + '" data-permission="' + res.permission + '"><span class="device-ip">' + res.ip + '</span><button class="permission-button" id="' + hashedIP + '">Ask Permission</button></div>';
 						
 						deviceList.innerHTML += device;
 						
