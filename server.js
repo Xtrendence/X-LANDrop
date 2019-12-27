@@ -316,7 +316,7 @@ app.on("ready", function() {
 						if(!user.blacklisted && !user.whitelisted) {
 							localWindow.webContents.send("userRequest", { ip:ipAddress, data:json });
 							res.send("sent");
-							console.log(ip + " - Permission Request.");
+							console.log(ipAddress + " - Permission Request.");
 						}
 					}
 					else {
@@ -331,7 +331,7 @@ app.on("ready", function() {
 							else {
 								localWindow.webContents.send("userRequest", { ip:ipAddress, data:users });
 								res.send("sent");
-								console.log(ip + " - Permission Request.");
+								console.log(ipAddress + " - Permission Request.");
 							}
 						});
 					}
