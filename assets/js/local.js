@@ -248,13 +248,13 @@ document.addEventListener("DOMContentLoaded", function() {
 				
 				if(!user.whitelisted && !user.blacklisted) {
 					notifications += 1;
-					requests.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>');
+					requests.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>');
 				}
 				else if(user.whitelisted) {
-					whitelist.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>');
+					whitelist.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>');
 				}
 				else if(user.blacklisted) {
-					blacklist.push('<div class="users-menu-item" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>');
+					blacklist.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>');
 				}
 			}
 		}
