@@ -257,26 +257,6 @@ button, input {
 	font-weight:bold;
 	background:none;
 }
-.loading-overlay.animated:after {
-	overflow:hidden;
-	display:inline-block;
-	vertical-align:bottom;
-	-webkit-animation:ellipsis steps(4, end) 1.5s infinite;      
-	animation:ellipsis steps(4, end) 1.5s infinite;
-	content:"\2026";
-	width:0px;
-}
-@keyframes ellipsis {
-	to {
-		width:24px;    
-	}
-}
-
-@-webkit-keyframes ellipsis {
-	to {
-		width:24px;    
-	}
-}
 
 .device {
 	position:relative;

@@ -24,10 +24,16 @@ document.addEventListener("DOMContentLoaded", function() {
 	ipcRenderer.send("APIRequest", { action:"get-ip" });
 	ipcRenderer.send("APIRequest", { action:"get-devices" });
 	ipcRenderer.send("APIRequest", { action:"get-notifications" });
+	
+	scanAnimation();
 
 	var scanDevices = setInterval(function() {
 		ipcRenderer.send("APIRequest", { action:"get-devices" });
 	}, 3000);
+	
+	var animation = setInterval(function() {
+		scanAnimation();
+	}, 450);
 
 	if(detectMobile()) {
 		body.id = "mobile";
@@ -345,6 +351,26 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			}, 500);
 		}, duration);
+	}
+	
+	function scanAnimation() {
+		if(document.getElementsByClassName("loading-overlay animated").length == 1) {
+			var element = document.getElementsByClassName("loading-overlay animated")[0];
+			var text = element.textContent;
+			
+			if(text == "Scanning") {
+				element.textContent = "Scanning.";
+			}
+			else if(text == "Scanning.") {
+				element.textContent = "Scanning..";
+			}
+			else if(text == "Scanning..") {
+				element.textContent = "Scanning...";
+			}
+			else if(text == "Scanning...") {
+				element.textContent = "Scanning";
+			}
+		}
 	}
 });
 
