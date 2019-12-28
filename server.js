@@ -19,11 +19,13 @@ const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
 const rsa = require("node-rsa");
 const md5 = require("md5");
+const sha256 = require("sha256");
 const multer = require("multer");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
 var dataFile = path.join(__dirname, "./data/data.txt");
+var keysFile = path.join(__dirname, "./data/keys.txt");
 var downloadDirectory = os.homedir() + "/Downloads/";
 
 const { app, BrowserWindow, screen, ipcMain } = electron;
@@ -64,9 +66,25 @@ app.on("ready", function() {
 		fs.writeFile(dataFile, "", function(error) {
 			if(error) {
 				console.log(error);
+				app.exit(0);
 			}
 			else {
 				console.log(chalk.green("\nCreated \"Data\" File."));
+			}
+		});
+	}
+	
+	if(!fs.existsSync(keysFile)) {
+		console.log(chalk.red("\nNo \"Keys\" file found."));
+		generateKeysFile();
+	}
+	else {
+		fs.readFile(keysFile, { encoding:"utf-8" }, function(error, json) {
+			if(!empty(json)) {
+				verifyKeys(json);
+			}
+			else {
+				generateKeysFile();
 			}
 		});
 	}
@@ -79,6 +97,7 @@ app.on("ready", function() {
 			fs.mkdir(path.join(__dirname, downloadDirectory), function(error) {
 				if(error) {
 					console.log(error);
+					app.exit(0);
 				}
 				else {
 					console.log(chalk.green("\nCreated \"Downloads\" folder."));
@@ -255,6 +274,7 @@ app.on("ready", function() {
 					if(!empty(body)) {
 						var status = "inactive";
 						var permission = "disallow";
+						var publicKey = "";
 						
 						try {
 							var data = JSON.parse(body);
@@ -270,7 +290,9 @@ app.on("ready", function() {
 								permission = "blocked";
 							}
 							
-							localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission });
+							publicKey = data.publicKey;
+							
+							localWindow.webContents.send("APIResponse", { action:"check-device", ip:req.ip, status:status, hashed:md5(req.ip), permission:permission, publicKey:publicKey });
 						}
 						catch(e) {
 							console.log(req.ip + " - Bad \"/status\" Body.");
@@ -406,7 +428,15 @@ app.on("ready", function() {
 						}
 					}
 					
-					var body = { status:"active", permission:permission };
+					var keys = getKeys();
+					var publicKey = "";
+					
+					if(!empty(keys)) {
+						keys = JSON.parse(keys);
+						publicKey = keys.publicKey;
+					}
+					
+					var body = { status:"active", permission:permission, publicKey:publicKey };
 					res.send(JSON.stringify(body));
 				}
 			});
@@ -417,6 +447,64 @@ app.on("ready", function() {
 	});
 });
 
+// Create a text file and put the user's private and public key in it.
+function generateKeysFile() {
+	var keys = JSON.stringify(rsaGenerateKeys());
+	fs.writeFile(keysFile, keys, function(error) {
+		if(error) {
+			console.log(error);
+			app.exit(0);
+		}
+		else {
+			console.log(chalk.green("\nGenerated Keys."));
+			verifyKeys(keys);
+		}
+	});
+}
+// Verify generated RSA key pair.
+function verifyKeys(json) {
+	if(!empty(json)) {
+		var keys = JSON.parse(json);
+		var publicKey = keys.publicKey;
+		var publicKeyChecksum = sha256(publicKey);
+		var publicKeyValid = keys.publicKeyChecksum;
+		var privateKey = keys.privateKey;
+		var privateKeyChecksum = sha256(privateKey);
+		var privateKeyValid = keys.privateKeyChecksum;
+		
+		if(publicKeyChecksum != publicKeyValid || privateKeyChecksum != privateKeyValid) {
+			console.log(chalk.red("\nCouldn't verify keys. Generating them again..."));
+			generateKeysFile();
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	else {
+		console.log(chalk.red("\nCouldn't verify keys."));
+		app.exit(0);
+	}
+}
+// Get keys.
+function getKeys() {
+	return fs.readFileSync(keysFile, { encoding:"utf-8" }, function(error, json) {
+		if(error) {
+			console.log(error);
+		}
+	});
+}
+
+// Generate RSA key pair.
+function rsaGenerateKeys() {
+	var key = new rsa();
+	key.generateKeyPair(2048);
+	var publicKey = key.exportKey("pkcs8-public");
+	var publicKeyChecksum = sha256(publicKey);
+	var privateKey = key.exportKey("pkcs8-private");
+	var privateKeyChecksum = sha256(privateKey);
+	return { publicKey:publicKey, publicKeyChecksum:publicKeyChecksum, privateKey:privateKey, privateKeyChecksum:privateKeyChecksum };
+}
 // Encrypt data with RSA.
 function rsaEncrypt(plaintext, key) {
 	var key = new rsa(key);
@@ -486,6 +574,7 @@ String.prototype.replaceAll = function(str1, str2, ignore) {
 }
 
 console.log(chalk.cyan("\nData File: ") + dataFile);
+console.log(chalk.cyan("\nKeys File: ") + keysFile);
 console.log(chalk.cyan("\nDownload Directory: ") + downloadDirectory + "\n");
 
 console.log(chalk.yellow("Local: ") + ip.address() + ":" + localPort);

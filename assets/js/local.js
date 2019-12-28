@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								var formData = new FormData();
 
 								for(var i = 0; i < input.files.length; i++) {
+									var file = input.files[i];
 									formData.append("files", input.files[i]);
 								}
 
@@ -356,11 +357,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 });
 
-// Generate RSA keys.
-async function rsaGenerateKeys(size) {
-	var crypt = new JSEncrypt({ default_key_size:size });
-	return { publicKey:crypt.getPublicKey(), privateKey:crypt.getPrivateKey() };
-}
 // Encrypt text.
 function rsaEncrypt(plaintext, key) {
 	var jsencrypt = new JSEncrypt();
@@ -392,6 +388,34 @@ function aesDecrypt(ciphertext, key, iv) {
 	var decryptedBytes = aesCTR.decrypt(encryptedBytes);
 	var decryptedText = aes.utils.utf8.fromBytes(decryptedBytes);
 	return decryptedText;
+}
+
+// Generate a random password.
+function generatePassword(length) {
+	var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	var symbols = "!@$#_-";
+	var numbers = "1234567890";
+	var password = "";
+	var len = (length / 2) - 1;
+	var lengthSymbols = length - len - len;
+
+	for(var i = 0; i < len; i++) {
+		password += letters.charAt(Math.floor(Math.random() * letters.length));
+	}
+
+	for(var i = 0; i < lenSymbols; i++) {
+		password += symbols.charAt(Math.floor(Math.random() * symbols.length));
+	}
+
+	for(var i = 0; i < len; i++) {
+		password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+	}
+
+	password = password.split("").sort(function() {
+		return 0.5 - Math.random();
+	});
+
+	return password.join("");
 }
 
 // Get current UNIX timestamp.
