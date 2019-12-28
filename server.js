@@ -17,6 +17,7 @@ const scan = require("evilscan");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const aes = require("aes-js");
+const rsa = require("node-rsa");
 const md5 = require("md5");
 const multer = require("multer");
 const chalk = require("chalk");
@@ -28,7 +29,7 @@ var downloadDirectory = os.homedir() + "/Downloads/";
 const { app, BrowserWindow, screen, ipcMain } = electron;
 
 app.requestSingleInstanceLock();
-app.setName("X:/LANDrop");
+app.name = "X:/LANDrop";
 
 console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
 
@@ -37,6 +38,19 @@ app.on("ready", function() {
 	const appExpress = express();
 	const localServer = localExpress.listen(localPort, "localhost");
 	const appServer = appExpress.listen(appPort);
+	
+	localServer.on("error", function(error) {
+		if(error.code == "EADDRINUSE") {
+			console.log("\n" + chalk.red("Port " + localPort + " is in use."));
+			app.exit(0);
+		}
+	});
+	appServer.on("error", function(error) {
+		if(error.code == "EADDRINUSE") {
+			console.log("\n" + chalk.red("Port " + appPort + " is in use."));
+			app.exit(0);
+		}
+	});
 	
 	const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 	var localWidth = 540;
@@ -74,8 +88,8 @@ app.on("ready", function() {
 	}
 	
 	fs.watchFile(dataFile, function(current, previous) {
-		var content = fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
-			localWindow.webContents.send("userRequest", json);
+		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+			localWindow.webContents.send("userRequest", { data:json });
 		});
 	});
 
@@ -184,7 +198,7 @@ app.on("ready", function() {
 			scanner.run();
 		}
 		else if(action == "get-notifications") {
-			var content = fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 				localWindow.webContents.send("APIResponse", { action:"get-notifications", data:json });
 			});
 		}
@@ -403,10 +417,21 @@ app.on("ready", function() {
 	});
 });
 
+// Encrypt data with RSA.
+function rsaEncrypt(plaintext, key) {
+	var key = new rsa(key);
+	return key.encrypt(plaintext, "base64");
+}
+// Decrypt data that's been encrypted with RSA.
+function rsaDecrypt(ciphertext, key) {
+	var key = new rsa(key);
+	return key.decrypt(ciphertext, "utf8");
+}
+
 // Encrypt data with AES-256-CTR.
 function aesEncrypt(plaintext, key) {
 	var bytes = aes.utils.utf8.toBytes(plaintext);
-	var buffer = Buffer.from(key.split("$$")[1]);
+	var buffer = Buffer.from(key);
 	var iv = crypto.randomBytes(16);
 	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
 	var encryptedBytes = aesCTR.encrypt(bytes);
@@ -416,7 +441,7 @@ function aesEncrypt(plaintext, key) {
 // Decrypt data that's been encrypted with AES-256-CTR.
 function aesDecrypt(ciphertext, key, iv) {
 	var encryptedBytes = aes.utils.hex.toBytes(ciphertext);
-	var buffer = Buffer.from(key.split("$$")[1]);
+	var buffer = Buffer.from(key);
 	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
 	var decryptedBytes = aesCTR.decrypt(encryptedBytes);
 	var decryptedText = aes.utils.utf8.fromBytes(decryptedBytes);

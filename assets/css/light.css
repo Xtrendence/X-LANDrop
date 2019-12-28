@@ -106,18 +106,19 @@ button, input {
 	font-size:22px;
 	border-radius:10px;
 	padding:10px;
+	margin:0;
+	width:calc(50% - 20px - 10px);
 	color:rgb(100,100,100);
 	display:inline-block;
+	cursor:pointer;
 }
 .user-ip {
-	width:calc(50% - 20px - 10px);
-	margin:0 10px 0 0;
 	background:rgb(220,220,220);
+	border-radius:10px 0 0 10px;
 }
 .user-port {
-	width:calc(50% - 20px - 10px);
-	margin:0 0 0 10px;
-	background:rgb(220,220,220);
+	background:rgb(210,210,210);
+	border-radius:0 10px 10px 0;
 }
 
 .users-menu-wrapper {

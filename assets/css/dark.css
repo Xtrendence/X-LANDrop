@@ -101,20 +101,20 @@ button, input {
 .user-wrapper span {
 	line-height:60px;
 	font-size:22px;
-	border-radius:10px;
 	padding:10px;
+	margin:0;
+	width:calc(50% - 20px - 10px);
 	color:rgb(255,255,255);
 	display:inline-block;
+	cursor:pointer;
 }
 .user-ip {
-	width:calc(50% - 20px - 10px);
-	margin:0 10px 0 0;
 	background:rgb(60,60,60);
+	border-radius:10px 0 0 10px;
 }
 .user-port {
-	width:calc(50% - 20px - 10px);
-	margin:0 0 0 10px;
 	background:rgb(50,50,50);
+	border-radius:0 10px 10px 0;
 }
 
 .users-menu-wrapper {

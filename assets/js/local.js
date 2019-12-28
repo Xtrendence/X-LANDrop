@@ -76,7 +76,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	
 	ipcRenderer.on("userRequest", function(error, res) {
 		processNotifications(res.data);
-		notify("Permission Required", res.ip + " would like to send you a file.", "rgb(20,20,20)", 4000, true);
+		if(!empty(res.ip)) {
+			notify("Permission Required", res.ip + " would like to send you a file.", "rgb(20,20,20)", 4000, true);
+		}
 	});
 	
 	ipcRenderer.on("APIResponse", function(error, res) {
@@ -89,6 +91,19 @@ document.addEventListener("DOMContentLoaded", function() {
 				setTimeout(function() {
 					ipcRenderer.send("APIRequest", { action:"get-ip" });
 				}, 2000);
+			}
+			else {
+				userIP.addEventListener("click", function() {
+					var url = "http://" + res.ip + ":" + res.port;
+					copyToClipboard(url);
+					notify("Copied to Clipboard", "You may share the link copied to your clipboard to allow others to send you files.", "rgb(20,20,20)", 6000);
+				});
+				
+				userPort.addEventListener("click", function() {
+					var url = "http://" + res.ip + ":" + res.port;
+					copyToClipboard(url);
+					notify("Copied to Clipboard", "You may share the link copied to your clipboard to allow others to send you files.", "rgb(20,20,20)", 6000);
+				});
 			}
 		}
 		else if(action == "get-devices") {
@@ -232,9 +247,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 	
 	function processNotifications(json) {
-		var requests = [];
-		var whitelist = [];
-		var blacklist = [];
+		divUsersListRequests.innerHTML = "";
+		divUsersListWhitelist.innerHTML = "";
+		divUsersListBlacklist.innerHTML = "";
 		
 		var notifications = 0;
 		
@@ -248,13 +263,27 @@ document.addEventListener("DOMContentLoaded", function() {
 				
 				if(!user.whitelisted && !user.blacklisted) {
 					notifications += 1;
-					requests.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>');
+					var list = divUsersListRequests;
+					divUsersListRequests.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>';
 				}
 				else if(user.whitelisted) {
-					whitelist.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>');
+					var list = divUsersListWhitelist;
+					divUsersListWhitelist.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>';
 				}
 				else if(user.blacklisted) {
-					blacklist.push('<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>');
+					var list = divUsersListBlacklist;
+					divUsersListBlacklist.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>';
+				}
+				
+				var item = list.getElementsByClassName("users-menu-item")[i];
+				var buttons = item.getElementsByTagName("button");
+				
+				for(var j = 0; j < buttons.length; j++) {
+					buttons[j].addEventListener("click", function() {
+						var ip = this.parentNode.parentNode.getAttribute("data-ip");
+						var action = this.getAttribute("data-action");
+						performUserAction(ip, action);
+					});
 				}
 			}
 		}
@@ -265,53 +294,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 		else {
 			spanUsersNotification.classList.add("hidden");
-		}
-		
-		divUsersListRequests.innerHTML = "";
-		divUsersListWhitelist.innerHTML = "";
-		divUsersListBlacklist.innerHTML = "";
-		
-		for(var i = 0; i < requests.length; i++) {
-			divUsersListRequests.innerHTML += requests[i];
-			
-			var item = divUsersListRequests.getElementsByClassName("users-menu-item")[i];
-			var buttons = item.getElementsByTagName("button");
-			
-			for(var j = 0; j < buttons.length; j++) {
-				buttons[j].addEventListener("click", function() {
-					var ip = this.parentNode.parentNode.getAttribute("data-ip");
-					var action = this.getAttribute("data-action");
-					performUserAction(ip, action);
-				});
-			}
-		}
-		for(var i = 0; i < whitelist.length; i++) {
-			divUsersListWhitelist.innerHTML += whitelist[i];
-			
-			var item = divUsersListWhitelist.getElementsByClassName("users-menu-item")[i];
-			var buttons = item.getElementsByTagName("button");
-			
-			for(var j = 0; j < buttons.length; j++) {
-				buttons[j].addEventListener("click", function() {
-					var ip = this.parentNode.parentNode.getAttribute("data-ip");
-					var action = this.getAttribute("data-action");
-					performUserAction(ip, action);
-				});
-			}
-		}
-		for(var i = 0; i < blacklist.length; i++) {
-			divUsersListBlacklist.innerHTML += blacklist[i];
-			
-			var item = divUsersListBlacklist.getElementsByClassName("users-menu-item")[i];
-			var buttons = item.getElementsByTagName("button");
-			
-			for(var j = 0; j < buttons.length; j++) {
-				buttons[j].addEventListener("click", function() {
-					var ip = this.parentNode.parentNode.getAttribute("data-ip");
-					var action = this.getAttribute("data-action");
-					performUserAction(ip, action);
-				});
-			}
 		}
 	}
 	
@@ -374,6 +356,44 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 });
 
+// Generate RSA keys.
+async function rsaGenerateKeys(size) {
+	var crypt = new JSEncrypt({ default_key_size:size });
+	return { publicKey:crypt.getPublicKey(), privateKey:crypt.getPrivateKey() };
+}
+// Encrypt text.
+function rsaEncrypt(plaintext, key) {
+	var jsencrypt = new JSEncrypt();
+	jsencrypt.setKey(key);
+	return jsencrypt.encrypt(plaintext);
+}
+// Decrypt text.
+function rsaDecrypt(encrypted, key) {
+	var jsencrypt = new JSEncrypt();
+	jsencrypt.setKey(key);
+	return jsencrypt.decrypt(encrypted);
+}
+
+// Encrypt data with AES-256-CTR.
+function aesEncrypt(plaintext, key) {
+	var bytes = aes.utils.utf8.toBytes(plaintext);
+	var buffer = Buffer.from(key);
+	var iv = crypto.randomBytes(16);
+	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
+	var encryptedBytes = aesCTR.encrypt(bytes);
+	var encryptedHex = aes.utils.hex.fromBytes(encryptedBytes);
+	return { ciphertext:encryptedHex, iv:iv };
+}
+// Decrypt data that's been encrypted with AES-256-CTR.
+function aesDecrypt(ciphertext, key, iv) {
+	var encryptedBytes = aes.utils.hex.toBytes(ciphertext);
+	var buffer = Buffer.from(key);
+	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
+	var decryptedBytes = aesCTR.decrypt(encryptedBytes);
+	var decryptedText = aes.utils.utf8.fromBytes(decryptedBytes);
+	return decryptedText;
+}
+
 // Get current UNIX timestamp.
 function epoch() {
 	var date = new Date();
@@ -389,11 +409,26 @@ function toEpoch(date){
 
 // Check if variable content is empty.
 function empty(string) {
-	var string = string.toString();
-	if(string != "null" && typeof string != "undefined" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
-		return false;
+	if(typeof string == "undefined") {
+		return true;
 	}
-	return true;
+	else {
+		var string = string.toString();
+		if(string != "null" && string.trim() != "" && JSON.stringify(string) != "" && JSON.stringify(string) != "{}") {
+			return false;
+		}
+		return true;
+	}
+}
+
+// Copy text to clipboard.
+function copyToClipboard(text) {
+	var temp = document.createElement("textarea");
+	document.body.appendChild(temp);
+	temp.textContent = text;
+	temp.select();
+	document.execCommand("copy");
+	temp.remove();
 }
 
 // Get URL query by key.
