@@ -313,7 +313,7 @@ app.on("ready", function() {
 	});
 
 	// appExpress.post("/receive", download.array("files", uploadLimit), function(req, res) {
-	appExpress.post("/receive", download.none(), function(req, res) {
+	appExpress.post("/receive", function(req, res) {
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
 				console.log(error);
@@ -327,8 +327,7 @@ app.on("ready", function() {
 					if(Object.keys(data).includes(userIP)) {
 						if(user.whitelisted) {
 							res.setHeader("Access-Control-Allow-Origin", "*");
-							// var files = req.files;
-							console.log(req.body);
+							console.log(req);
 							res.send("sent");
 							localWindow.webContents.send("notify", { title:"File Received", description:userIP + " has sent you one or more files.", duration:4000 });
 						}
