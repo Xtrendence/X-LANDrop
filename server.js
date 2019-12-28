@@ -327,7 +327,7 @@ app.on("ready", function() {
 					if(Object.keys(data).includes(userIP)) {
 						if(user.whitelisted) {
 							res.setHeader("Access-Control-Allow-Origin", "*");
-							console.log(req);
+							console.log(req.body.formData);
 							res.send("sent");
 							localWindow.webContents.send("notify", { title:"File Received", description:userIP + " has sent you one or more files.", duration:4000 });
 						}
