@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								});
 
 								xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
-								xhrUpload.send(JSON.stringify({ formData:aesEncrypt(formData) }));
+								xhrUpload.send(formData);
 							});
 						});
 					}
