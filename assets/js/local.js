@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									formData.append("files", file);
+									formData.append("files", aesEncrypt(file).ciphertext);
 								}
 
 								var xhrUpload = new XMLHttpRequest();
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								});
 
 								xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
-								xhrUpload.send(aesEncrypt(formData).ciphertext);
+								xhrUpload.send(formData);
 							});
 						});
 					}
