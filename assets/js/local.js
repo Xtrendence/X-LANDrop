@@ -155,7 +155,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									formData.append("files", input.files[i]);
+									var reader = new FileReader();
+									reader.addEventListener("load", function(e) {
+										var content = e.target.result;
+										formData.append("files", content);
+									});
+									reader.readAsDataURL(file);
 								}
 
 								var xhrUpload = new XMLHttpRequest();
