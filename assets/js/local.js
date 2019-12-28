@@ -117,6 +117,9 @@ document.addEventListener("DOMContentLoaded", function() {
 		else if(action == "get-notifications") {
 			processNotifications(res.data);
 		}
+		else if(action == "notify") {
+			notify(res.title, res.description, "rgb(20,20,20)", res.duration);
+		}
 		else if(action == "check-device") {
 			var status = res.status;
 			var permission = res.permission;
@@ -187,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function() {
 								});
 
 								xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
-								xhrUpload.send(formData);
+								xhrUpload.send(aesEncrypt(formData).ciphertext);
 							});
 						});
 					}
@@ -370,6 +373,19 @@ function rsaDecrypt(encrypted, key) {
 	return jsencrypt.decrypt(encrypted);
 }
 
+// Encrypt text using AES-256.
+function aesEncrypt(plaintext) {
+	var key = generatePassword(32);
+	var iv = generatePassword(16);
+	
+	var keyBytes = CryptoJS.enc.Utf8.parse(key);
+	var ivBytes = CryptoJS.enc.Utf8.parse(iv);
+	
+	var ciphertext = CryptoJS.AES.encrypt(plaintext, keyBytes, { iv:ivBytes, mode:CryptoJS.mode.CTR, padding:CryptoJS.pad.NoPadding }).ciphertext.toString(CryptoJS.enc.Hex);
+	
+	return { ciphertext:ciphertext, iv:iv, key:key };
+}
+
 // Generate a random password.
 function generatePassword(length) {
 	var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -383,7 +399,7 @@ function generatePassword(length) {
 		password += letters.charAt(Math.floor(Math.random() * letters.length));
 	}
 
-	for(var i = 0; i < lenSymbols; i++) {
+	for(var i = 0; i < lengthSymbols; i++) {
 		password += symbols.charAt(Math.floor(Math.random() * symbols.length));
 	}
 
