@@ -327,7 +327,6 @@ app.on("ready", function() {
 						if(user.whitelisted) {
 							res.setHeader("Access-Control-Allow-Origin", "*");
 							var files = req.files;
-							console.log(files);
 							res.send("sent");
 						}
 					}

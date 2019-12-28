@@ -155,12 +155,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									var reader = new FileReader();
-									reader.addEventListener("load", function(e) {
-										var content = e.target.result;
-										formData.append("files", content);
-									});
-									reader.readAsDataURL(file);
+									formData.append("files", file);
 								}
 
 								var xhrUpload = new XMLHttpRequest();
@@ -373,26 +368,6 @@ function rsaDecrypt(encrypted, key) {
 	var jsencrypt = new JSEncrypt();
 	jsencrypt.setKey(key);
 	return jsencrypt.decrypt(encrypted);
-}
-
-// Encrypt data with AES-256-CTR.
-function aesEncrypt(plaintext, key) {
-	var bytes = aes.utils.utf8.toBytes(plaintext);
-	var buffer = Buffer.from(key);
-	var iv = crypto.randomBytes(16);
-	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
-	var encryptedBytes = aesCTR.encrypt(bytes);
-	var encryptedHex = aes.utils.hex.fromBytes(encryptedBytes);
-	return { ciphertext:encryptedHex, iv:iv };
-}
-// Decrypt data that's been encrypted with AES-256-CTR.
-function aesDecrypt(ciphertext, key, iv) {
-	var encryptedBytes = aes.utils.hex.toBytes(ciphertext);
-	var buffer = Buffer.from(key);
-	var aesCTR = new aes.ModeOfOperation.ctr(buffer, iv);
-	var decryptedBytes = aesCTR.decrypt(encryptedBytes);
-	var decryptedText = aes.utils.utf8.fromBytes(decryptedBytes);
-	return decryptedText;
 }
 
 // Generate a random password.
