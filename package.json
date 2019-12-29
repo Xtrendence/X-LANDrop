@@ -31,7 +31,7 @@
     "fs": "0.0.1-security",
     "ip": "^1.1.5",
     "md5": "^2.2.1",
-    "multer": "^1.4.2",
+    "node-jsencrypt": "^1.0.0",
     "node-rsa": "^1.0.7",
     "path": "^0.12.7",
     "request": "^2.88.0",

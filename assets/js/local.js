@@ -138,8 +138,6 @@ document.addEventListener("DOMContentLoaded", function() {
 						var device = '<div class="device" id="' + res.ip + '" data-permission="' + permission + '"><button class="progress"></button><span class="device-ip">' + res.ip + '</span><button class="send-button" id="' + hashedIP + '">Send File</button></div>';
 						
 						deviceList.innerHTML += device;
-						
-						var progressBar = document.getElementById(res.ip).getElementsByClassName("progress")[0];
 
 						document.getElementById(hashedIP).addEventListener("click", function() {
 							var input = document.createElement("input");
@@ -154,43 +152,10 @@ document.addEventListener("DOMContentLoaded", function() {
 							input.click();
 
 							input.addEventListener("change", function() {
-								var formData = new FormData();
-
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									formData.append("files", file);
+									uploadFile(input, file);
 								}
-
-								var xhrUpload = new XMLHttpRequest();
-
-								xhrUpload.upload.addEventListener("progress", function(e) {
-									if(e.lengthComputable) {
-										var percentage = ((e.loaded / e.total) * 100).toFixed(2);
-										
-										progressBar.style.width = percentage + "%";
-										
-										if(percentage > 20) {
-											progressBar.textContent = Math.floor(percentage) + "%";
-										}
-										
-										if(percentage == 100) {
-											if(input.files.length > 1) {
-												notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000, false);
-											}
-											else {
-												notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000, false);
-											}
-											
-											setTimeout(function() {
-												progressBar.textContent = "";
-												progressBar.removeAttribute("style");
-											}, 1500);
-										}
-									}
-								});
-
-								xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
-								xhrUpload.send(formData);
 							});
 						});
 					}
@@ -231,6 +196,53 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		}
 	});
+
+	function uploadFile(input, file) {
+		var reader = new FileReader();
+		reader.addEventListener("load", function(e) {
+			var content = reader.result.split(",")[1];
+			var encryptedContent = aesEncrypt(content);
+			var xhrUpload = new XMLHttpRequest();
+
+			xhrUpload.upload.addEventListener("progress", function(e) {
+				if(e.lengthComputable) {
+					var percentage = ((e.loaded / e.total) * 100).toFixed(2);
+					
+					var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+					
+					progressBar.style.width = percentage + "%";
+					
+					if(percentage > 20) {
+						progressBar.textContent = Math.floor(percentage) + "%";
+					}
+					
+					if(percentage == 100 && file == input.files[input.files.length]) {
+						if(input.files.length > 1) {
+							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						else {
+							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						
+						setTimeout(function() {
+							progressBar.textContent = "";
+							progressBar.removeAttribute("style");
+							input.remove();
+						}, 1500);
+					}
+				}
+			});
+
+			xhrUpload.addEventListener("error", function(error) {
+				notify("Error", "Couldn't upload file(s).", "rgb(20,20,20)", 4000);
+			});
+
+			xhrUpload.open("POST", url, true);
+			xhrUpload.setRequestHeader("Content-Type", "application/json");
+			xhrUpload.send(JSON.stringify({ fileContent:encryptedContent.ciphertext, filename:file.name, iv:encryptedContent.iv, key:rsaEncrypt(encryptedContent.key, publicKey) }));
+		});
+		reader.readAsDataURL(file);
+	}
 
 	function showUsersMenu() {
 		divUsersMenu.style.display = "block";

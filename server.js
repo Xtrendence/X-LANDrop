@@ -15,12 +15,11 @@ const request = require("request");
 const ip = require("ip");
 const scan = require("evilscan");
 const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
+const jsencrypt = require("node-jsencrypt");
 const aes = require("aes-js");
 const rsa = require("node-rsa");
 const md5 = require("md5");
 const sha256 = require("sha256");
-const multer = require("multer");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
@@ -112,68 +111,11 @@ app.on("ready", function() {
 		});
 	});
 
-	var storage = multer.diskStorage({
-		destination: function(req, file, cb) {
-			cb(null, downloadDirectory);
-		},
-		filename: function(req, file, cb) {
-			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
-				if(error) {
-					console.log(error);
-				}
-				else {
-					if(!empty(json)) {
-						var data = JSON.parse(json);
-						var userIP = req.connection.remoteAddress.replace(/^.*:/, '');
-						var user = data[userIP];
-						
-						if(Object.keys(data).includes(userIP)) {
-							if(user.whitelisted) {
-								var count = 1;
-
-								var originalName = file.originalname.replace(/[/\\?%*:|"<>]/g, '-');
-								if(originalName.includes(".")) {
-									var parts = originalName.split(".");
-									var ext = parts[parts.length - 1];
-									var nameOnly = parts.slice(0, parts.length - 1);
-
-									var name = nameOnly + "." + ext;
-									while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-										name = nameOnly + " (" + count + ")." + ext;
-									}
-								}
-								else {
-									var name = originalName;
-									while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
-										name = file.originalname.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
-									}
-								}
-								
-								cb(null, name);
-							}
-							else {
-								cb(new Error("You don't have permission to send files to this user."));
-							}
-						}
-						else {
-							cb(new Error("You don't have permission to send files to this user."));
-						}
-					}
-					else {
-						cb(new Error("You don't have permission to send files to this user."));
-					}
-				}
-			});
-		}
-	});
-
-	const download = multer({ storage:storage });
-
 	var lastActive = epoch();
 
 	localExpress.set("view engine", "ejs");
 	localExpress.use("/assets", express.static("assets"));
-	localExpress.use(bodyParser.urlencoded({ extended: true }));
+	localExpress.use(bodyParser.urlencoded({ extended:true }));
 	localExpress.use(bodyParser.json());
 
 	localExpress.get("/", function(req, res) {
@@ -305,14 +247,14 @@ app.on("ready", function() {
 
 	appExpress.set("view engine", "ejs");
 	appExpress.use("/assets", express.static("assets"));
-	appExpress.use(bodyParser.urlencoded({ extended: true }));
-	appExpress.use(bodyParser.json());
+	appExpress.use(bodyParser.urlencoded({ extended:true, limit:"10000mb" }));
+	appExpress.use(bodyParser.json({ limit:"10000mb" }));
 
 	appExpress.get("/", function(req, res) {
 		res.redirect("/receive");
 	});
 
-	appExpress.post("/receive", download.array("files", uploadLimit), function(req, res) {
+	appExpress.post("/receive", function(req, res) {
 		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
 			if(error) {
 				console.log(error);
@@ -326,7 +268,53 @@ app.on("ready", function() {
 					if(Object.keys(data).includes(userIP)) {
 						if(user.whitelisted) {
 							res.setHeader("Access-Control-Allow-Origin", "*");
-							var files = req.files;
+							
+							var count = 1;
+							
+							var keys = getKeys();
+							var privateKey = "";
+							
+							if(!empty(keys)) {
+								keys = JSON.parse(keys);
+								privateKey = keys.privateKey;
+							}
+							
+							var encryptedContent = req.body.fileContent;
+							var filename = req.body.filename;
+							var key = rsaDecrypt(req.body.key, privateKey);
+							var iv = req.body.iv;
+							
+							var keyBytes = aes.utils.utf8.toBytes(key);
+							var ivBytes = aes.utils.utf8.toBytes(iv);
+							
+							var decryptedContent = aesDecrypt(encryptedContent, keyBytes, ivBytes);
+
+							var originalName = filename.replace(/[/\\?%*:|"<>]/g, '-');
+							if(originalName.includes(".")) {
+								var parts = originalName.split(".");
+								var ext = parts[parts.length - 1];
+								var nameOnly = parts.slice(0, parts.length - 1);
+
+								var name = nameOnly + "." + ext;
+								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+									name = nameOnly + " (" + count + ")." + ext;
+								}
+							}
+							else {
+								var name = originalName;
+								while(fs.existsSync(path.join(__dirname, downloadDirectory + name))) {
+									name = filename.replace(/[/\\?%*:|"<>]/g, '-') + " (" + count + ")";
+								}
+							}
+							
+							var buffer = new Buffer.from(decryptedContent, "base64");
+							
+							fs.writeFile(downloadDirectory + name, buffer, function(error) {
+								if(error) {
+									console.log(error);
+								}
+							});
+							
 							res.send("sent");
 							localWindow.webContents.send("notify", { title:"File Received", description:userIP + " has sent you one or more files.", duration:4000 });
 						}
@@ -392,12 +380,27 @@ app.on("ready", function() {
 	});
 
 	appExpress.get("/receive", function(req, res) {
-		res.setHeader("Access-Control-Allow-Origin", "*");
-		if(epoch() - lastActive < inactiveTime) {
-			res.render("app", { ip:[req.connection.remoteAddress.replace(/^.*:/, '')] });
+		var ipAddress = req.connection.remoteAddress.replace(/^.*:/, '');
+		if(ipAddress != ip.address()) {
+			res.setHeader("Access-Control-Allow-Origin", "*");
+			
+			var keys = getKeys();
+			var publicKey = "";
+			
+			if(!empty(keys)) {
+				keys = JSON.parse(keys);
+				publicKey = keys.publicKey;
+			}
+			
+			if(epoch() - lastActive < inactiveTime) {
+				res.render("app", { ip:ipAddress, publicKey:publicKey });
+			}
+			else {
+				res.send("inactive");
+			}
 		}
 		else {
-			res.send("inactive");
+			res.send("You can't send yourself files...");
 		}
 	});
 
@@ -506,15 +509,17 @@ function rsaGenerateKeys() {
 	var privateKeyChecksum = sha256(privateKey);
 	return { publicKey:publicKey, publicKeyChecksum:publicKeyChecksum, privateKey:privateKey, privateKeyChecksum:privateKeyChecksum };
 }
-// Encrypt data with RSA.
+// Encrypt text.
 function rsaEncrypt(plaintext, key) {
-	var key = new rsa(key);
-	return key.encrypt(plaintext, "base64");
+	var jsEnc = new jsencrypt();
+	jsEnc.setKey(key);
+	return jsEnc.encrypt(plaintext);
 }
-// Decrypt data that's been encrypted with RSA.
-function rsaDecrypt(ciphertext, key) {
-	var key = new rsa(key);
-	return key.decrypt(ciphertext, "utf8");
+// Decrypt text.
+function rsaDecrypt(encrypted, key) {
+	var jsEnc = new jsencrypt();
+	jsEnc.setKey(key);
+	return jsEnc.decrypt(encrypted);
 }
 
 // Encrypt data with AES-256-CTR.
@@ -535,13 +540,6 @@ function aesDecrypt(ciphertext, key, iv) {
 	var decryptedBytes = aesCTR.decrypt(encryptedBytes);
 	var decryptedText = aes.utils.utf8.fromBytes(decryptedBytes);
 	return decryptedText;
-}
-
-// Generate a token.
-function generateToken() {
-	var salt1 = bcrypt.genSaltSync();
-	var salt2 = bcrypt.genSaltSync();
-	return bcrypt.hashSync(salt1 + salt2, 10);
 }
 
 // Get current UNIX timestamp.

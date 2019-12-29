@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	var hashedIP = md5(ip);
 	
+	var publicKey = document.getElementsByClassName("public-key")[0].textContent.replaceAll('"', '');
+	
 	checkDevice();
 	
 	var check = setInterval(function() {
@@ -53,53 +55,14 @@ document.addEventListener("DOMContentLoaded", function() {
 									input.multiple = true;
 
 									body.appendChild(input);
-									
-									var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
 
 									input.click();
 
 									input.addEventListener("change", function() {
-										var formData = new FormData();
-
 										for(var i = 0; i < input.files.length; i++) {
-											formData.append("files", input.files[i]);
+											var file = input.files[i];
+											uploadFile(input, file);
 										}
-
-										var xhrUpload = new XMLHttpRequest();
-
-										xhrUpload.upload.addEventListener("progress", function(e) {
-											if(e.lengthComputable) {
-												var percentage = ((e.loaded / e.total) * 100).toFixed(2);
-												
-												progressBar.style.width = percentage + "%";
-												
-												if(percentage > 20) {
-													progressBar.textContent = Math.floor(percentage) + "%";
-												}
-												
-												if(percentage == 100) {
-													if(input.files.length > 1) {
-														notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
-													}
-													else {
-														notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
-													}
-													
-													setTimeout(function() {
-														progressBar.textContent = "";
-														progressBar.removeAttribute("style");
-														input.remove();
-													}, 1500);
-												}
-											}
-										});
-
-										xhrUpload.addEventListener("error", function(error) {
-											notify("Error", "Couldn't upload file(s).", "rgb(20,20,20)", 4000);
-										});
-
-										xhrUpload.open("POST", url, true);
-										xhrUpload.send(formData);
 									});
 								});
 							}
@@ -145,7 +108,107 @@ document.addEventListener("DOMContentLoaded", function() {
 		xhr.open("GET", "http://" + ip + ":" + port + "/status", true);
 		xhr.send();
 	}
+	function uploadFile(input, file) {
+		var reader = new FileReader();
+		reader.addEventListener("load", function(e) {
+			var content = reader.result.split(",")[1];
+			var encryptedContent = aesEncrypt(content);
+			var xhrUpload = new XMLHttpRequest();
+
+			xhrUpload.upload.addEventListener("progress", function(e) {
+				if(e.lengthComputable) {
+					var percentage = ((e.loaded / e.total) * 100).toFixed(2);
+					
+					var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+					
+					progressBar.style.width = percentage + "%";
+					
+					if(percentage > 20) {
+						progressBar.textContent = Math.floor(percentage) + "%";
+					}
+					
+					if(percentage == 100 && file == input.files[input.files.length]) {
+						if(input.files.length > 1) {
+							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						else {
+							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+						}
+						
+						setTimeout(function() {
+							progressBar.textContent = "";
+							progressBar.removeAttribute("style");
+							input.remove();
+						}, 1500);
+					}
+				}
+			});
+
+			xhrUpload.addEventListener("error", function(error) {
+				notify("Error", "Couldn't upload file(s).", "rgb(20,20,20)", 4000);
+			});
+
+			xhrUpload.open("POST", url, true);
+			xhrUpload.setRequestHeader("Content-Type", "application/json");
+			xhrUpload.send(JSON.stringify({ fileContent:encryptedContent.ciphertext, filename:file.name, iv:encryptedContent.iv, key:rsaEncrypt(encryptedContent.key, publicKey) }));
+		});
+		reader.readAsDataURL(file);
+	}
 });
+
+// Encrypt text.
+function rsaEncrypt(plaintext, key) {
+	var jsencrypt = new JSEncrypt();
+	jsencrypt.setKey(key);
+	return jsencrypt.encrypt(plaintext);
+}
+// Decrypt text.
+function rsaDecrypt(encrypted, key) {
+	var jsencrypt = new JSEncrypt();
+	jsencrypt.setKey(key);
+	return jsencrypt.decrypt(encrypted);
+}
+
+// Encrypt text using AES-256.
+function aesEncrypt(plaintext) {
+	var key = generatePassword(32);
+	var iv = generatePassword(16);
+	
+	var keyBytes = CryptoJS.enc.Utf8.parse(key);
+	var ivBytes = CryptoJS.enc.Utf8.parse(iv);
+	
+	var ciphertext = CryptoJS.AES.encrypt(plaintext, keyBytes, { iv:ivBytes, mode:CryptoJS.mode.CTR, padding:CryptoJS.pad.NoPadding }).ciphertext.toString(CryptoJS.enc.Hex);
+	
+	return { ciphertext:ciphertext, iv:iv, key:key };
+}
+
+// Generate a random password.
+function generatePassword(length) {
+	var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	var symbols = "!@$#_-";
+	var numbers = "1234567890";
+	var password = "";
+	var len = (length / 2) - 1;
+	var lengthSymbols = length - len - len;
+
+	for(var i = 0; i < len; i++) {
+		password += letters.charAt(Math.floor(Math.random() * letters.length));
+	}
+
+	for(var i = 0; i < lengthSymbols; i++) {
+		password += symbols.charAt(Math.floor(Math.random() * symbols.length));
+	}
+
+	for(var i = 0; i < len; i++) {
+		password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+	}
+
+	password = password.split("").sort(function() {
+		return 0.5 - Math.random();
+	});
+
+	return password.join("");
+}
 
 // Get current UNIX timestamp.
 function epoch() {
@@ -196,6 +259,11 @@ function notify(title, description, color, duration) {
 			}
 		}, 500);
 	}, duration);
+}
+
+// Replace all occurrences in a string.
+String.prototype.replaceAll = function(str1, str2, ignore) {
+	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
 // Detect whether or not the user is on a mobile browser.
