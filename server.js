@@ -3,6 +3,7 @@ const localPort = 6968; // Port used for the local portion of application. Only 
 const appPort = 6969; // Port used to allow other devices to connect to the server. 6969 recommended for immature reasons.
 const inactiveTime = 7; // If the app or tab is closed for this many seconds, the device's status is set to inactive and other devices won't list it.
 const uploadLimit = 100; // Number of files that can be uploaded at a time.
+const fileSizeLimit = "10000mb"; // Maximum upload file size. By default it's "10000mb", which is 10GBs, but since files are being read by the browser and encrypted before being sent as part of an HTTP request, it's highly recommended to not exceed even 1GB.
 const keySize = 2048; // RSA key length (in bits). The bigger the key, the more secure the encryption (at the cost of speed). 2048 recommended.
 
 const electron = require("electron");
@@ -263,8 +264,8 @@ app.on("ready", function() {
 
 	appExpress.set("view engine", "ejs");
 	appExpress.use("/assets", express.static("assets"));
-	appExpress.use(bodyParser.urlencoded({ extended:true, limit:"10000mb" }));
-	appExpress.use(bodyParser.json({ limit:"10000mb" }));
+	appExpress.use(bodyParser.urlencoded({ extended:true, limit:fileSizeLimit }));
+	appExpress.use(bodyParser.json({ limit:fileSizeLimit }));
 
 	appExpress.get("/", function(req, res) {
 		res.redirect("/receive");
