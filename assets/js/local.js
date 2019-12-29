@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							input.addEventListener("change", function() {
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									uploadFile(input, file);
+									uploadFile(input, res, file);
 								}
 							});
 						});
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	});
 
-	function uploadFile(input, file) {
+	function uploadFile(input, res, file) {
 		var reader = new FileReader();
 		reader.addEventListener("load", function(e) {
 			var content = reader.result.split(",")[1];
