@@ -65,7 +65,7 @@
     "sha256": "^0.2.0"
   },
   "devDependencies": {
-    "electron": "latest",
+    "electron": "^7.1.7",
     "electron-builder": "^21.2.0",
     "electron-builder-squirrel-windows": "^22.2.0",
     "nodemon": "^2.0.2"
