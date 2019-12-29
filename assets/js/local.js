@@ -287,18 +287,18 @@ document.addEventListener("DOMContentLoaded", function() {
 				if(!user.whitelisted && !user.blacklisted) {
 					notifications += 1;
 					var list = divUsersListRequests;
-					divUsersListRequests.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>';
+					divUsersListRequests.innerHTML += '<div class="users-menu-item noselect ' + ip + '" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Decline</button><button data-action="accept">Accept</button></div>';
 				}
 				else if(user.whitelisted) {
 					var list = divUsersListWhitelist;
-					divUsersListWhitelist.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>';
+					divUsersListWhitelist.innerHTML += '<div class="users-menu-item noselect ' + ip + '" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="block">Block</button><button data-action="decline">Remove</button></div>';
 				}
 				else if(user.blacklisted) {
 					var list = divUsersListBlacklist;
-					divUsersListBlacklist.innerHTML += '<div class="users-menu-item noselect" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>';
+					divUsersListBlacklist.innerHTML += '<div class="users-menu-item noselect ' + ip + '" data-ip="' + ip + '"><span>' + ip + '</span><div><button data-action="unblock">Unblock</button><button data-action="accept">Whitelist</button></div>';
 				}
 				
-				var item = list.getElementsByClassName("users-menu-item")[i];
+				var item = list.getElementsByClassName("users-menu-item " + ip)[0];
 				var buttons = item.getElementsByTagName("button");
 				
 				for(var j = 0; j < buttons.length; j++) {
