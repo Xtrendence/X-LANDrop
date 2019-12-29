@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				if(e.lengthComputable) {
 					var percentage = ((e.loaded / e.total) * 100).toFixed(2);
 					
-					var progressBar = document.getElementById(ip).getElementsByClassName("progress")[0];
+					var progressBar = document.getElementById(res.ip).getElementsByClassName("progress")[0];
 					
 					progressBar.style.width = percentage + "%";
 					
