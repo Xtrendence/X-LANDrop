@@ -123,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		else if(action == "check-device") {
 			var status = res.status;
 			var permission = res.permission;
+			var publicKey = res.publicKey;
 			if(status == "active" && permission != "blocked" && res.ip != userIP.textContent) {
 				if(document.getElementsByClassName("loading-overlay").length > 0) {
 					document.getElementsByClassName("loading-overlay")[0].remove();
@@ -239,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 			xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
 			xhrUpload.setRequestHeader("Content-Type", "application/json");
-			xhrUpload.send(JSON.stringify({ fileContent:encryptedContent.ciphertext, filename:file.name, iv:encryptedContent.iv, key:rsaEncrypt(encryptedContent.key, publicKey) }));
+			xhrUpload.send(JSON.stringify({ fileContent:encryptedContent.ciphertext, filename:file.name, iv:encryptedContent.iv, key:rsaEncrypt(encryptedContent.key, res.publicKey) }));
 		});
 		reader.readAsDataURL(file);
 	}
