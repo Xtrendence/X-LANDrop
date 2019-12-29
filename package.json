@@ -2,10 +2,12 @@
   "name": "x-landrop",
   "version": "1.0.0",
   "description": "An AirDrop-like application for sharing files between devices on the same network.",
-  "main": "server.js",
+  "main": "./app/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "postinstall": "install-app-deps",
+    "start": "npm install && electron ./app/server.js",
+    "pack": "build --dir",
+    "dist": "electron-builder -mwl"
   },
   "repository": {
     "type": "git",
@@ -17,13 +19,39 @@
     "url": "https://github.com/Xtrendence/X-LANDrop/issues"
   },
   "homepage": "https://github.com/Xtrendence/X-LANDrop#readme",
+  "build": {
+    "appId": "com.xtrendence.x-landrop",
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "squirrel",
+      "icon": "build/icon.ico"
+    }
+  },
   "dependencies": {
     "aes-js": "^3.1.2",
     "body-parser": "^1.19.0",
     "chalk": "^3.0.0",
     "crypto": "^1.0.1",
     "ejs": "^3.0.1",
-    "electron": "^7.1.7",
     "evilscan": "^1.7.5",
     "express": "^4.17.1",
     "express-session": "^1.17.0",
@@ -37,7 +65,9 @@
     "sha256": "^0.2.0"
   },
   "devDependencies": {
+    "electron": "latest",
     "electron-builder": "^21.2.0",
+    "electron-builder-squirrel-windows": "^22.2.0",
     "nodemon": "^2.0.2"
   }
 }
