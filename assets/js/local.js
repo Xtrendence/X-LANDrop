@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				notify("Error", "Couldn't upload file(s).", "rgb(20,20,20)", 4000);
 			});
 
-			xhrUpload.open("POST", url, true);
+			xhrUpload.open("POST", "http://" + res.ip + ":" + userPort.textContent + "/receive", true);
 			xhrUpload.setRequestHeader("Content-Type", "application/json");
 			xhrUpload.send(JSON.stringify({ fileContent:encryptedContent.ciphertext, filename:file.name, iv:encryptedContent.iv, key:rsaEncrypt(encryptedContent.key, publicKey) }));
 		});
