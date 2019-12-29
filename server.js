@@ -1,8 +1,9 @@
 // Changeable Variables
 const localPort = 6968; // Port used for the local portion of application. Only the server should be able to access this.
-const appPort = 6969; // Port used to allow other devices to connect to the server.
+const appPort = 6969; // Port used to allow other devices to connect to the server. 6969 recommended for immature reasons.
 const inactiveTime = 7; // If the app or tab is closed for this many seconds, the device's status is set to inactive and other devices won't list it.
 const uploadLimit = 100; // Number of files that can be uploaded at a time.
+const keySize = 2048; // RSA key length (in bits). The bigger the key, the more secure the encryption (at the cost of speed). 2048 recommended.
 
 const electron = require("electron");
 const express = require("express");
@@ -517,7 +518,7 @@ function getKeys() {
 // Generate RSA key pair.
 function rsaGenerateKeys() {
 	var key = new rsa();
-	key.generateKeyPair(2048);
+	key.generateKeyPair(keySize);
 	var publicKey = key.exportKey("pkcs8-public");
 	var publicKeyChecksum = sha256(publicKey);
 	var privateKey = key.exportKey("pkcs8-private");
