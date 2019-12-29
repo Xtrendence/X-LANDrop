@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	
 	var publicKey = document.getElementsByClassName("public-key")[0].textContent.replaceAll('"', '');
 	
+	var fileQueue = 0;
+	
 	checkDevice();
 	
 	var check = setInterval(function() {
@@ -61,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
 									input.addEventListener("change", function() {
 										for(var i = 0; i < input.files.length; i++) {
 											var file = input.files[i];
-											uploadFile(input, file, i, input.files.length);
+											uploadFile(input, file);
 										}
 									});
 								});
@@ -109,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		xhr.send();
 	}
 	function uploadFile(input, file, fileNumber, fileCount) {
+		fileQueue += 1;
 		var reader = new FileReader();
 		reader.addEventListener("load", function(e) {
 			var content = reader.result.split(",")[1];
@@ -127,19 +130,22 @@ document.addEventListener("DOMContentLoaded", function() {
 						progressBar.textContent = Math.floor(percentage) + "%";
 					}
 					
-					if(percentage == 100 && fileNumber == fileCount) {
-						if(fileCount > 1) {
-							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+					if(percentage == 100) {
+						fileQueue -= 1;
+						if(fileQueue == 0) {
+							if(input.files.length > 1) {
+								notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
+							}
+							else {
+								notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
+							}
+							
+							setTimeout(function() {
+								progressBar.textContent = "";
+								progressBar.removeAttribute("style");
+								input.remove();
+							}, 1500);
 						}
-						else {
-							notify("Sent", "The file has been successfully sent.", "rgb(20,20,20)", 4000);
-						}
-						
-						setTimeout(function() {
-							progressBar.textContent = "";
-							progressBar.removeAttribute("style");
-							input.remove();
-						}, 1500);
 					}
 				}
 			});
