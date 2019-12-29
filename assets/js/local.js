@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function() {
 							input.addEventListener("change", function() {
 								for(var i = 0; i < input.files.length; i++) {
 									var file = input.files[i];
-									uploadFile(input, res, file);
+									uploadFile(input, res, file, i);
 								}
 							});
 						});
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	});
 
-	function uploadFile(input, res, file) {
+	function uploadFile(input, res, file, i) {
 		var reader = new FileReader();
 		reader.addEventListener("load", function(e) {
 			var content = reader.result.split(",")[1];
@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						progressBar.textContent = Math.floor(percentage) + "%";
 					}
 					
-					if(percentage == 100 && file == input.files[input.files.length]) {
+					if(percentage == 100 && i == input.files.length) {
 						if(input.files.length > 1) {
 							notify("Sent", "The files have been successfully sent.", "rgb(20,20,20)", 4000);
 						}
