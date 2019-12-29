@@ -23,9 +23,11 @@ const sha256 = require("sha256");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
-var dataFile = path.join(__dirname, "./data/data.txt");
-var keysFile = path.join(__dirname, "./data/keys.txt");
 var downloadDirectory = os.homedir() + "/Downloads/";
+var dataDirectory = path.join(__dirname, "./data/");
+
+var dataFile = dataDirectory + "data.txt";
+var keysFile = dataDirectory + "keys.txt";
 
 const { app, BrowserWindow, screen, ipcMain } = electron;
 
@@ -59,6 +61,19 @@ app.on("ready", function() {
 	
 	const localWindow = new BrowserWindow({ width:localWidth, height:localHeight, resizable:false, frame:true, webPreferences:{ nodeIntegration:true }});
 	localWindow.loadURL("file://" + path.join(__dirname, "./views/local.html") + "?localPort=" + localPort);
+	
+	if(!fs.existsSync(dataDirectory)) {
+		console.log(chalk.red("\nNo \"Data\" folder found."));
+		fs.mkdir(dataDirectory, function(error) {
+			if(error) {
+				console.log(error);
+				app.exit(0);
+			}
+			else {
+				console.log(chalk.green("\nCreated \"Data\" folder."));
+			}
+		});
+	}
 
 	if(!fs.existsSync(dataFile)) {
 		console.log(chalk.red("\nNo \"Data\" file found."));
