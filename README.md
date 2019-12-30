@@ -21,3 +21,5 @@ By default, X:/LANDrop saves files to the user's "Downloads" folder. The maximum
 [**Linux**](https://drive.google.com/open?id=1G7EG9DLxTOYweQL4DYJ4PYf0HU6UvW4L)
 
 [**Windows**](https://drive.google.com/open?id=1ZWQ0RnwH9Q2TxBCEpZkQD_0otjnSGc7f)
+
+*Please note that on Mac it might say that the application can't be opened because it's from an unidentified developer. To fix this, simply open **System Preferences**, go to **Security & Privacy**, click on the **General** tab, and find the **Open Anyway** button at the bottom of the page.*
