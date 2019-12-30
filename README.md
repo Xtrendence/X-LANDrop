@@ -13,3 +13,11 @@ Before a user can send files to another user, they need to ask for permission. T
 Since X:/LANDrop is most likely to be used in a local area network, it's unlikely that users would have SSL, so 2048-bit (changeable) RSA keys are generated when the app is first launched, and the user's public key is accessible to any connecting client. Files are encrypted using AES-256-CTR with a random key and IV. The key is then encrypted (with RSA) using the recipient's public key. On the recipient's side, the key is decrypted using their private key, and is used to decrypt the file. This way, MITM attacks don't pose a threat.
 
 By default, X:/LANDrop saves files to the user's "Downloads" folder. The maximum upload file size is 10GBs, but since the file content is being read by the browser before being encrypted and sent to the server through an HTTP POST request, it's highly recommended not to exceed ~1GB, though it'll probably work, I just wouldn't rely on it.
+
+## Download
+
+[**Mac**](https://drive.google.com/open?id=1mUBLdlbrw72Iy_p28VAS5DXzdSLWZ6_1)
+
+[**Linux**](https://drive.google.com/open?id=1G7EG9DLxTOYweQL4DYJ4PYf0HU6UvW4L)
+
+[**Windows**](https://drive.google.com/open?id=1ZWQ0RnwH9Q2TxBCEpZkQD_0otjnSGc7f)
