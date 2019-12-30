@@ -1,5 +1,5 @@
 {
-  "name": "x-landrop",
+  "name": "X-Landrop",
   "version": "1.0.0",
   "description": "An AirDrop-like application for sharing files between devices on the same network.",
   "main": "./app/server.js",
@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/Xtrendence/X-LANDrop.git"
   },
-  "author": "Xtrendence",
+  "author": "xtrendence@gmail.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Xtrendence/X-LANDrop/issues"
