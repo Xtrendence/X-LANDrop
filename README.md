@@ -16,10 +16,10 @@ By default, X:/LANDrop saves files to the user's "Downloads" folder. The maximum
 
 ## Download
 
-[**Mac**](https://drive.google.com/open?id=1mUBLdlbrw72Iy_p28VAS5DXzdSLWZ6_1)
-
-[**Linux**](https://drive.google.com/open?id=1G7EG9DLxTOYweQL4DYJ4PYf0HU6UvW4L)
-
-[**Windows**](https://drive.google.com/open?id=1ZWQ0RnwH9Q2TxBCEpZkQD_0otjnSGc7f)
+|Download Link|Checksum (SHA-256)|
+|-------------|------------------|
+|[**Mac**](https://drive.google.com/open?id=1mUBLdlbrw72Iy_p28VAS5DXzdSLWZ6_1)|32c8f003f61c30a46ca9db3537f63bec09b849c83879c15fcc1be45d9b44831a|
+|[**Linux**](https://drive.google.com/open?id=1G7EG9DLxTOYweQL4DYJ4PYf0HU6UvW4L)|2e6957d15ceb79d2c83c58f8e1d7c482e3ffbe734388159c6494e6bcf98f0395|
+|[**Windows**](https://drive.google.com/open?id=1ZWQ0RnwH9Q2TxBCEpZkQD_0otjnSGc7f)|8ec60199ddd1967719d111f66e848654aabbcf8bd45ba65e9b70837078a2cfdb|
 
 *Please note that on Mac it might say that the application can't be opened because it's from an unidentified developer. To fix this, simply open **System Preferences**, go to **Security & Privacy**, click on the **General** tab, and find the **Open Anyway** button at the bottom of the page.*
