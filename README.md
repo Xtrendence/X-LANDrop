@@ -20,10 +20,10 @@ If you don't want to download the app using the links below, you can download th
 
 ## Download
 
-|Download Link|Checksum (SHA-512)|
+|Platform|Download Link|
 |-------------|------------------|
-|[**Mac**](https://drive.google.com/open?id=1T0i60oh7IqAPd6mkDSP8sHJy25FQf1c0)|c292f4e36ab8507c6ff99937ac6361ee0b8e07c700e96d97fedc3b893955798cd6b8ebf8794baef122893beb69cc71c298aa4b0d44f42e6277b8fb3911483d7f|
-|[**Linux**](https://drive.google.com/open?id=107DdbZTeB4Ng1nT8C44jvtYE86ZBaX0B)|c57a850674e16c291ba02350a8edb3f14a3126d83a4af22b1007bf2814b051248c318cd21c5d3741fb0ba412a5310f0d2e5d0d423b985cb2183961104d03abe2|
-|[**Windows**](https://drive.google.com/open?id=1GfA8Z_8m1UdVknROlGbC8aJgH3QiojRC)|f657aaf667e71ac88129e3fd438bf3a96cd1f56b3763a19c75ce9d2b7387fee090eae2d10bc07c8be08bb3c08c38333196f6ea90c5f816694d43d3dc0c1ae12f|
+|**Mac**|https://drive.google.com/open?id=1hfms74JTOMmVTlV4orTTkXbR26ulqhbX|
+|**Linux**|https://drive.google.com/open?id=1vZMqrWm5z9_11t2zLo2WipNqM4-gQrX8|
+|**Windows**|https://drive.google.com/open?id=1Ev6c54yLP0a_B4I-2aX7qD4wvsiEDU4G|
 
 *Please note that on Mac it might say that the application can't be opened because it's from an unidentified developer. To fix this, simply open **System Preferences**, go to **Security & Privacy**, click on the **General** tab, and find the **Open Anyway** button at the bottom of the page.*
