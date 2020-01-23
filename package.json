@@ -65,7 +65,6 @@
     "sha256": "^0.2.0"
   },
   "devDependencies": {
-    "app-builder-lib": "^22.3.1",
     "electron": "^7.1.7",
     "electron-builder": "^21.2.0",
     "nodemon": "^2.0.2"
