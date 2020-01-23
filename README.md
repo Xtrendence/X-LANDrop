@@ -24,6 +24,6 @@ If you don't want to download the app using the links below, you can download th
 |-------------|------------------|
 |**Mac**|https://drive.google.com/open?id=1hfms74JTOMmVTlV4orTTkXbR26ulqhbX|
 |**Linux**|https://drive.google.com/open?id=1vZMqrWm5z9_11t2zLo2WipNqM4-gQrX8|
-|**Windows**|https://drive.google.com/open?id=1Ev6c54yLP0a_B4I-2aX7qD4wvsiEDU4G|
+|**Windows**|https://drive.google.com/open?id=1d5OD04BVjbsxqk1FW4fjXA4owMe-HyWO|
 
 *Please note that on Mac it might say that the application can't be opened because it's from an unidentified developer. To fix this, simply open **System Preferences**, go to **Security & Privacy**, click on the **General** tab, and find the **Open Anyway** button at the bottom of the page.*
