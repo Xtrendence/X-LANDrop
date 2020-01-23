@@ -25,16 +25,16 @@ const sha256 = require("sha256");
 const chalk = require("chalk");
 const bodyParser = require("body-parser");
 
-var downloadDirectory = os.homedir() + "/Downloads/";
-var dataDirectory = path.join(__dirname, "./data/");
-
-var dataFile = dataDirectory + "data.txt";
-var keysFile = dataDirectory + "keys.txt";
-
 const { app, BrowserWindow, screen, ipcMain } = electron;
 
 app.requestSingleInstanceLock();
 app.name = "X:/LANDrop";
+
+var downloadDirectory = os.homedir() + "/Downloads/";
+var dataDirectory = app.getPath("userData") + "/data/";
+
+var dataFile = dataDirectory + "data.txt";
+var keysFile = dataDirectory + "keys.txt";
 
 console.log("\n" + chalk.magenta(new Date().toLocaleTimeString()));
 
@@ -85,8 +85,20 @@ app.on("ready", function() {
 				app.exit(0);
 			}
 			else {
+				fs.watchFile(dataFile, function(current, previous) {
+					fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+						localWindow.webContents.send("userRequest", { data:json });
+					});
+				});
 				console.log(chalk.green("\nCreated \"Data\" File."));
 			}
+		});
+	}
+	else {
+		fs.watchFile(dataFile, function(current, previous) {
+			fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
+				localWindow.webContents.send("userRequest", { data:json });
+			});
 		});
 	}
 	
@@ -121,12 +133,6 @@ app.on("ready", function() {
 			});
 		}
 	}
-	
-	fs.watchFile(dataFile, function(current, previous) {
-		fs.readFile(dataFile, { encoding:"utf-8" }, function(error, json) {
-			localWindow.webContents.send("userRequest", { data:json });
-		});
-	});
 
 	var lastActive = epoch();
 
