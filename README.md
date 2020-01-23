@@ -14,6 +14,10 @@ Since X:/LANDrop is most likely to be used in a local area network, it's unlikel
 
 By default, X:/LANDrop saves files to the user's "Downloads" folder. The maximum upload file size is 10GBs, but since the file content is being read by the browser before being encrypted and sent to the server through an HTTP POST request, it's highly recommended not to exceed ~1GB, though it'll probably work, I just wouldn't rely on it.
 
+### Launch using Electron:
+
+If you don't want to download the app using the links below, you can download the source code, "cd" into the directory, run "npm install", run "npm i -g electron" and then start the app using "nodemon --exec electron ." and it should launch.
+
 ## Download
 
 |Download Link|Checksum (SHA-256)|
