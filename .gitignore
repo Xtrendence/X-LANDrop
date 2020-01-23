@@ -1,3 +1,6 @@
 dist
 node_modules/electron
 data
+node_modules/@electron
+node_modules/app-builder-bin
+node_modules/app-builder-lib
