@@ -1,5 +1,5 @@
 {
-  "name": "X-Landrop",
+  "name": "X-LANDrop",
   "version": "1.0.0",
   "description": "An AirDrop-like application for sharing files between devices on the same network.",
   "main": "./app/server.js",
