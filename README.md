@@ -1,6 +1,6 @@
 # X:/LANDrop
 
-An AirDrop-like web application that runs on NodeJS, and is wrapped with ElectronJS to allow for cross-platform functionality.
+An AirDrop-like web application that runs on Node.js, and is wrapped with ElectronJS to allow for cross-platform functionality.
 
 Starting the application hosts a server on the user's device. There are two ways devices can interact with one another:
 
