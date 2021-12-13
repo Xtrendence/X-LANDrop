@@ -1,5 +1,7 @@
 # X:/LANDrop
 
+### Disclaimer: A better and more lightweight version of this application is available [here](https://www.github.com/Xtrendence/FileDrop).
+
 An AirDrop-like web application that runs on Node.js, and is wrapped with ElectronJS to allow for cross-platform functionality.
 
 Starting the application hosts a server on the user's device. There are two ways devices can interact with one another:
